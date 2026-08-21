@@ -5,7 +5,6 @@ import type { Metadata, Viewport } from 'next';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
-import { ThemeProvider } from '@/components/ThemeProvider';
 import { brand, siteUrl } from '@/config/brand';
 import { fontVariables } from '@/app/fonts';
 import { routing } from '@/i18n/routing';
@@ -98,11 +97,9 @@ const LocaleLayout = async ({
       </head>
       <body>
         <NextIntlClientProvider>
-          <ThemeProvider>
-            <Header />
-            <main id="contenido">{children}</main>
-            <Footer />
-          </ThemeProvider>
+          <Header />
+          <main id="contenido">{children}</main>
+          <Footer />
         </NextIntlClientProvider>
       </body>
     </html>

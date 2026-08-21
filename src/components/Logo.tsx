@@ -10,21 +10,21 @@ interface LogoProps {
 }
 
 /**
- * Wordmark XTT.
+ * Logotipo XTT: el wordmark dentro de su marco cuadrado, según el manual.
  *
- * PROVISIONAL: es el wordmark compuesto tipográficamente mientras Sergio entrega
- * el vectorial oficial. El manual (pág. 6) prohíbe distorsionar el logo y esta
- * versión no reproduce su kerning exacto, así que NO debe llegar a producción.
- * Cuando llegue el .svg, este componente se reduce a un <svg> inline.
+ * Se pinta como máscara CSS sobre `currentColor` en vez de como `<img>`. Así un
+ * solo archivo cubre los dos temas —hereda `--color-fg`, que ya es negro en
+ * claro y blanco en oscuro— y evita servir dos SVG y hacer swap por tema, que
+ * es justo lo que el manual (pág. 5) describe como las dos versiones del logo.
  *
- * El punto final es parte del logotipo, no puntuación.
+ * El tamaño lo fija quien lo usa vía `--logo-size`; el componente no decide
+ * cuán grande va porque cambia entre header, hero y footer.
  */
 export const Logo = ({ className, decorative = false }: LogoProps) => (
   <span
     className={cn(styles.logo, className)}
-    aria-hidden={decorative || undefined}
+    role={decorative ? undefined : 'img'}
     aria-label={decorative ? undefined : brand.name}
-  >
-    {brand.wordmark}
-  </span>
+    aria-hidden={decorative || undefined}
+  />
 );

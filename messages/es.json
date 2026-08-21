@@ -17,10 +17,7 @@
     "mobileLabel": "Navegación móvil"
   },
   "theme": {
-    "label": "Tema",
-    "light": "Claro",
-    "dark": "Oscuro",
-    "system": "Según el sistema"
+    "toggle": "Cambiar tema"
   },
   "locale": {
     "label": "Idioma",

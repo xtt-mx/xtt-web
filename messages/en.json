@@ -17,10 +17,7 @@
     "mobileLabel": "Mobile navigation"
   },
   "theme": {
-    "label": "Theme",
-    "light": "Light",
-    "dark": "Dark",
-    "system": "Match system"
+    "toggle": "Toggle theme"
   },
   "locale": {
     "label": "Language",

@@ -38,17 +38,50 @@ azul base como `color` en tema oscuro.
 
 ## Temas
 
-Tres estados: `light`, `dark`, `system` (default). La elección explícita se guarda en
-`localStorage` y se estampa como `data-theme` en `<html>`; sin elección, manda
-`prefers-color-scheme`.
+Internamente hay tres estados —`light`, `dark` y `system`— pero la UI expone **un
+solo botón** que alterna claro ↔ oscuro. `system` es el estado inicial de quien
+nunca lo toca; dejó de ser una posición seleccionable porque tres controles
+cargaban demasiado el header.
 
 - El script anti-FOUC (`src/lib/theme.ts` → `themeInitScript`) corre inline y
   bloqueante en `<head>`. Es el **único** script inline aceptable en este proyecto.
-- El estado se lee con `useSyncExternalStore`, no con `useEffect` + `setState`:
-  localStorage es un sistema externo y leerlo desde un efecto provoca renders en
-  cascada (y el lint de React 19 lo marca como error).
+- **El tema no vive en estado de React.** `data-theme` en `<html>` es la única
+  fuente de verdad, y `resolveTheme()` lo lee del DOM. Duplicarlo en un `useState`
+  solo abre la puerta a que las dos versiones diverjan.
+- **Nada que dependa del tema se decide en render.** El servidor no sabe qué tema
+  tiene el visitante, así que cualquier marcado condicional produce mismatch de
+  hidratación o un parpadeo. Los iconos del toggle se renderizan los dos y CSS
+  muestra el que toca, con los mismos selectores que gobiernan los tokens.
+  Corolario: las etiquetas accesibles son fijas ("Cambiar tema"), porque CSS no
+  puede corregir texto.
 - El modo claro se **diseña**, no se invierte. Cualquier sección nueva se revisa en
   los dos temas antes de dar por terminada.
+
+## Logotipo
+
+`public/logo-xtt.svg` es el wordmark dentro de su marco cuadrado, en un solo
+`<path>` sin fondo. Se pinta como **máscara CSS sobre `currentColor`**, no como
+`<img>`: así hereda `--color-fg` y sale negro en claro y blanco en oscuro con un
+único archivo, que es exactamente lo que el manual describe como las dos versiones.
+
+El tamaño lo fija el consumidor con `--logo-size`, nunca el componente.
+
+### De dónde salió ese SVG
+
+⚠️ Es una **reconstrucción**, no el archivo maestro de la marca.
+
+Los dos archivos que entregó XTT el 2026-08-21 (`BWhite.svg` y `Black.svg`) no eran
+vectoriales: cada uno era un PNG de 500×500 en base64 dentro de un envoltorio
+`<svg>` —cero `<path>`, un solo `<image>`— más un `<rect>` de fondo opaco.
+
+Para obtener el vector actual se extrajo el PNG, se recortó al bounding box de la
+marca (284×284 de los 500×500; el resto era aire), se escaló 4× y se vectorizó con
+potrace. El resultado difiere del original en **0.73 %** de los pixeles, que son
+bordes de antialiasing.
+
+Escala sin perder nitidez y sirve para producción, pero las curvas no son las que
+dibujó el diseñador original. El ticket del vectorial oficial sigue abierto; cuando
+llegue, se reemplaza `public/logo-xtt.svg` y no hace falta tocar código.
 
 ## Convenciones de código
 

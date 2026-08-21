@@ -38,6 +38,9 @@
   flex: none;
   display: inline-flex;
   align-items: center;
+  /* Crece un poco con el viewport pero con topes: el logo del header nunca debe
+     competir con el H1 ni desaparecer en móvil. */
+  --logo-size: clamp(26px, 3.2vw, 34px);
 }
 
 .nav {

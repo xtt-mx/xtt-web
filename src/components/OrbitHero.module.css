@@ -89,20 +89,19 @@
   opacity: 1;
 }
 
+/* El logotipo ya trae su propio marco cuadrado (manual, pág. 5), así que el
+   círculo que había aquí antes solo duplicaba un contorno. Queda el disco de
+   fondo para separar la marca de las líneas de órbita que pasan por detrás. */
 .core {
   position: relative;
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 26%;
+  width: 34%;
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--color-bg);
-  border: 1px solid var(--color-rule-strong);
-}
-
-.coreLogo {
-  font-size: clamp(1.75rem, 5vw, 3rem);
+  --logo-size: clamp(56px, 13vw, 118px);
 }
 
 .orbit {
@@ -197,9 +196,19 @@
     display: block;
   }
 
-  .rings,
-  .core {
+  .rings {
     display: none;
+  }
+
+  /* El logo NO se esconde en móvil: el brief pide la marca al centro con las
+     soluciones alrededor, y aunque la órbita se aplane a lista, la marca sigue
+     encabezándola. Solo pierde el disco de fondo, que sin anillos no separa nada. */
+  .core {
+    width: auto;
+    aspect-ratio: auto;
+    margin: 0 auto 32px;
+    background: transparent;
+    --logo-size: 84px;
   }
 
   .orbit {

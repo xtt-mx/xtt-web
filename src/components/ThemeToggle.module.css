@@ -1,45 +1,75 @@
-.group {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-2);
-}
-
-.option {
+.toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 26px;
+  width: 34px;
+  height: 32px;
   padding: 0;
-  border: 0;
-  border-radius: var(--radius-xs);
-  background: transparent;
-  color: var(--color-fg-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-2);
+  color: var(--color-fg-2);
   cursor: pointer;
   transition:
     color var(--dur-fast) var(--ease-out-quart),
-    background-color var(--dur-fast) var(--ease-out-quart);
+    border-color var(--dur-fast) var(--ease-out-quart);
 }
 
-.option:hover {
+.toggle:hover {
   color: var(--color-fg);
+  border-color: var(--color-rule-strong);
 }
 
-.active {
-  background: var(--color-bg);
-  color: var(--color-fg);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+/*
+  Qué icono se ve lo decide CSS con los mismos selectores que gobiernan los
+  tokens de color. Se muestra el icono del DESTINO: en tema claro se ve la luna
+  ("ir a oscuro") y en oscuro se ve el sol.
+
+  Hacerlo aquí y no en React es lo que evita el mismatch de hidratación: el
+  servidor no sabe qué tema tiene el visitante, pero el navegador sí, antes del
+  primer paint.
+*/
+
+.sun {
+  display: none;
 }
 
-/* En pantallas táctiles el target crece: 30x26 pasa el mínimo de WCAG 2.5.8
+.moon {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme='light'])) .sun {
+    display: block;
+  }
+
+  :global(:root:not([data-theme='light'])) .moon {
+    display: none;
+  }
+}
+
+:global(:root[data-theme='dark']) .sun {
+  display: block;
+}
+
+:global(:root[data-theme='dark']) .moon {
+  display: none;
+}
+
+/* Gana sobre el media query cuando se fuerza claro con el sistema en oscuro. */
+:global(:root[data-theme='light']) .sun {
+  display: none;
+}
+
+:global(:root[data-theme='light']) .moon {
+  display: block;
+}
+
+/* En pantallas táctiles el target crece: 34x32 pasa el mínimo de WCAG 2.5.8
    (24x24) pero se falla con el pulgar. Con puntero fino no hace falta. */
 @media (pointer: coarse) {
-  .option {
-    width: 38px;
-    height: 34px;
+  .toggle {
+    width: 40px;
+    height: 38px;
   }
 }

@@ -1,9 +1,19 @@
+/*
+  El logo es una máscara, no una imagen: el relleno sale de `currentColor`, así
+  que hereda el color de texto del contexto y queda negro en tema claro y blanco
+  en oscuro sin cargar dos archivos.
+
+  `-webkit-mask` sigue haciendo falta para Safari; sin él el logo se ve como un
+  bloque sólido del color de texto.
+*/
 .logo {
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  line-height: 1;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--color-fg);
-  user-select: none;
+  display: block;
+  width: var(--logo-size, 32px);
+  /* El asset es cuadrado (viewBox 284×284); esto reserva el espacio antes de que
+     cargue y evita que el header salte. */
+  aspect-ratio: 1;
+  flex: none;
+  background-color: currentColor;
+  -webkit-mask: url('/logo-xtt.svg') center / contain no-repeat;
+  mask: url('/logo-xtt.svg') center / contain no-repeat;
 }

@@ -9,8 +9,8 @@ ES/EN, tema claro/oscuro, desplegado en el VPS de Hostinger que XTT ya paga.
   Centroamérica, el Caribe y Colombia.
 - **Correr:** `pnpm install && pnpm dev` → http://localhost:3000
 - **Idiomas:** español en la raíz (`/nosotros`), inglés prefijado (`/en/about`).
-- **Temas:** claro, oscuro y "según el sistema", con toggle en el header.
-- **Tests:** `pnpm test:e2e` — 18 pasando, 2 proyectos (escritorio y móvil).
+- **Temas:** un botón en el header alterna claro ↔ oscuro; sin tocarlo, manda el sistema.
+- **Tests:** `pnpm test:e2e` — 2 proyectos (escritorio y móvil).
 - **Reglas del repo:** [CLAUDE.md](CLAUDE.md). Léelo antes del primer PR.
 - **Estado:** fundaciones y home listas. Ver [Status & completeness](#status--completeness)
   para la lista honesta de lo que falta.
@@ -39,6 +39,7 @@ src/
   config/              fuente de verdad: marca, nav, soluciones, presencia, partners
   i18n/                routing, navegación tipada, carga de mensajes
   lib/                 cn(), sistema de temas
+public/logo-xtt.svg    logotipo vectorial, usado como máscara CSS
 messages/              es.json · en.json — TODA la copy
 e2e/                   Playwright
 ```
@@ -81,7 +82,7 @@ son sólidas; falta la mayor parte del contenido.
 | Área            | Estado                                                                       |
 | --------------- | ---------------------------------------------------------------------------- |
 | Design system   | Tokens light/dark, tipografía del manual, primitivas, motion tokenizado      |
-| Temas           | 3 estados, sin FOUC, persistente, sincronizado entre pestañas, 5 tests       |
+| Temas           | Un botón claro/oscuro, sin FOUC, persistente, sincronizado entre pestañas    |
 | i18n            | ES/EN con slugs traducidos, sin autodetección, switcher que conserva la ruta |
 | Home            | Hero orbital en CSS puro, degrada a lista en móvil, respeta reduced-motion   |
 | Header / Footer | Nav de 5 apartados, menú móvil con Escape y bloqueo de scroll, skip link     |
@@ -90,13 +91,13 @@ son sólidas; falta la mayor parte del contenido.
 
 ### ⚠️ Cableado, sin verificar contra la realidad
 
-| Área              | Hecho                                                        | Falta                                                                                                                                                |
-| ----------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Docker / Caddy    | Dockerfile multi-stage, compose, healthcheck, TLS automático | Nunca se corrió en el VPS real. Falta el acceso SSH.                                                                                                 |
-| SMTP de contacto  | `.env.example` documentado, endpoint pendiente               | Credenciales reales; probar entrega y spam                                                                                                           |
-| Metadata / OG     | `metadataBase`, títulos, canonicals, hreflang                | Falta la imagen OG; hoy no hay ninguna                                                                                                               |
-| Logo              | Wordmark tipográfico provisional en `Logo.tsx`               | **No debe ir a producción.** Falta el `.svg` oficial                                                                                                 |
-| Branch protection | CI, CODEOWNERS y plantillas de PR listas                     | GitHub rechaza proteger `main` en repos privados sin plan Pro. Hoy nada impide un push directo. Se resuelve con Pro (~4 USD/mes) o abriendo el repo. |
+| Área              | Hecho                                                                              | Falta                                                                                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Docker / Caddy    | Dockerfile multi-stage, compose, healthcheck, TLS automático                       | Nunca se corrió en el VPS real. Falta el acceso SSH.                                                                                                 |
+| SMTP de contacto  | `.env.example` documentado, endpoint pendiente                                     | Credenciales reales; probar entrega y spam                                                                                                           |
+| Metadata / OG     | `metadataBase`, títulos, canonicals, hreflang                                      | Falta la imagen OG; hoy no hay ninguna                                                                                                               |
+| Logo              | Vector real trazado del entregable del cliente, como máscara CSS que sigue el tema | Los archivos que entregó XTT eran PNG dentro de un `<svg>`; este trazo difiere 0.73 % del original pero **no es el archivo maestro de la marca**.    |
+| Branch protection | CI, CODEOWNERS y plantillas de PR listas                                           | GitHub rechaza proteger `main` en repos privados sin plan Pro. Hoy nada impide un push directo. Se resuelve con Pro (~4 USD/mes) o abriendo el repo. |
 
 ### 🔲 No construido todavía (deliberado)
 
@@ -114,7 +115,7 @@ son sólidas; falta la mayor parte del contenido.
 
 Nada de lo anterior avanza del todo sin esto:
 
-1. **Logo XTT en vectorial** (`.svg` o `.ai`).
+1. **Logo XTT en vectorial de verdad** (`.svg` o `.ai`). Lo entregado el 2026-08-21 era PNG dentro de un `<svg>`; hoy se sirve un trazo reconstruido.
 2. **Listado real de partners**: nombre, país, ciudad, soluciones, sitio, tier.
 3. **Confirmar nombres de soluciones.** El brief decía "CCAS" y "SBCEs"; se asumió
    CCaaS y SBC. Está marcado en `src/config/solutions.ts`.

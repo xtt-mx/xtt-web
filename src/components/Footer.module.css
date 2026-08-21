@@ -16,8 +16,9 @@
 .brandColumn {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
   max-width: 34ch;
+  --logo-size: 44px;
 }
 
 .tagline {

@@ -20,7 +20,7 @@ export const Footer = async () => {
     <footer className={styles.footer}>
       <div className={cn('container-wide', styles.inner)}>
         <div className={styles.brandColumn}>
-          <Logo decorative />
+          <Logo />
           <p className={cn('muted', styles.tagline)}>{t('tagline')}</p>
         </div>
 

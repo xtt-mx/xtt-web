@@ -50,7 +50,7 @@ export const OrbitHero = async () => {
           </div>
 
           <div className={styles.core}>
-            <Logo className={styles.coreLogo} decorative />
+            <Logo decorative />
           </div>
 
           <ul className={styles.orbit} aria-label={t('orbitLabel')}>
