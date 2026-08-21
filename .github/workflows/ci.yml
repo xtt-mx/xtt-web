@@ -22,11 +22,11 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           # Toma la versión de .nvmrc para que CI y las máquinas locales no diverjan.
           node-version-file: '.nvmrc'
@@ -54,11 +54,11 @@ jobs:
     needs: quality
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
@@ -74,9 +74,13 @@ jobs:
       - name: Tests e2e
         run: pnpm test:e2e
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: e2e/.report
+          # `.report` es un directorio oculto y upload-artifact los excluye por
+          # defecto desde v4; sin esto el reporte nunca se sube y el paso pasa
+          # en verde igual, que es la peor combinación.
+          include-hidden-files: true
           retention-days: 7

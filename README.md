@@ -90,12 +90,13 @@ son sólidas; falta la mayor parte del contenido.
 
 ### ⚠️ Cableado, sin verificar contra la realidad
 
-| Área             | Hecho                                                        | Falta                                                |
-| ---------------- | ------------------------------------------------------------ | ---------------------------------------------------- |
-| Docker / Caddy   | Dockerfile multi-stage, compose, healthcheck, TLS automático | Nunca se corrió en el VPS real. Falta el acceso SSH. |
-| SMTP de contacto | `.env.example` documentado, endpoint pendiente               | Credenciales reales; probar entrega y spam           |
-| Metadata / OG    | `metadataBase`, títulos, canonicals, hreflang                | Falta la imagen OG; hoy no hay ninguna               |
-| Logo             | Wordmark tipográfico provisional en `Logo.tsx`               | **No debe ir a producción.** Falta el `.svg` oficial |
+| Área              | Hecho                                                        | Falta                                                                                                                                                |
+| ----------------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Docker / Caddy    | Dockerfile multi-stage, compose, healthcheck, TLS automático | Nunca se corrió en el VPS real. Falta el acceso SSH.                                                                                                 |
+| SMTP de contacto  | `.env.example` documentado, endpoint pendiente               | Credenciales reales; probar entrega y spam                                                                                                           |
+| Metadata / OG     | `metadataBase`, títulos, canonicals, hreflang                | Falta la imagen OG; hoy no hay ninguna                                                                                                               |
+| Logo              | Wordmark tipográfico provisional en `Logo.tsx`               | **No debe ir a producción.** Falta el `.svg` oficial                                                                                                 |
+| Branch protection | CI, CODEOWNERS y plantillas de PR listas                     | GitHub rechaza proteger `main` en repos privados sin plan Pro. Hoy nada impide un push directo. Se resuelve con Pro (~4 USD/mes) o abriendo el repo. |
 
 ### 🔲 No construido todavía (deliberado)
 
