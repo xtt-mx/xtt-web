@@ -1,0 +1,85 @@
+.footer {
+  margin-top: 96px;
+  border-top: 1px solid var(--color-rule);
+  background: var(--color-bg-2);
+}
+
+/* Asimétrico a propósito: la columna de marca pesa más que las de enlaces.
+   Tres columnas iguales es el reflejo de plantilla que queremos evitar. */
+.inner {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1.2fr;
+  gap: 48px;
+  padding-block: 56px 40px;
+}
+
+.brandColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 34ch;
+}
+
+.tagline {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-style: normal;
+}
+
+.column h2 {
+  margin-bottom: 6px;
+}
+
+.link {
+  font-size: 0.9375rem;
+  color: var(--color-fg-2);
+  width: fit-content;
+  transition: color var(--dur-fast) var(--ease-out-quart);
+}
+
+.link:hover {
+  color: var(--color-accent-text);
+}
+
+.address {
+  margin-top: 6px;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.legal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-block: 20px;
+  border-top: 1px solid var(--color-rule);
+}
+
+.copy {
+  font-size: 0.75rem;
+  color: var(--color-fg-3);
+}
+
+a.copy:hover {
+  color: var(--color-fg);
+}
+
+@media (max-width: 880px) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .legal {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

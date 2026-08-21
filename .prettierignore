@@ -1,0 +1,7 @@
+.next
+node_modules
+out
+pnpm-lock.yaml
+e2e/.report
+e2e/.results
+public

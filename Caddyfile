@@ -1,0 +1,11 @@
+# TLS automático vía Let's Encrypt. Caddy renueva solo; no hay cron que mantener.
+{$SITE_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+
+	# HSTS. Se activa una vez validado el dominio en HTTPS: si se pone antes y
+	# algo falla, los navegadores recuerdan el pin y dejan el sitio inaccesible.
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	header X-Content-Type-Options "nosniff"
+	header Referrer-Policy "strict-origin-when-cross-origin"
+}

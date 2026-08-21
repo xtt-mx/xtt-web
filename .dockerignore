@@ -1,0 +1,13 @@
+# Contextos de build chicos: esto es lo pesado o lo que no debe entrar a la imagen.
+node_modules
+.next
+out
+.git
+.github
+.husky
+e2e
+.env
+.env.*
+!.env.example
+brand-source
+*.md

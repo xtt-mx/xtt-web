@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "siteName": "XTT",
+    "defaultTitle": "XTT — Mayorista de soluciones CX y telecomunicaciones",
+    "defaultDescription": "Mayorista de tecnología de contact center, telefonía SIP y canales digitales para México, Centroamérica, el Caribe y Colombia."
+  },
+  "nav": {
+    "home": "Inicio",
+    "about": "Nosotros",
+    "solutions": "Nuestras soluciones",
+    "partnerLocator": "Partner Locator",
+    "contact": "Contacto",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "skipToContent": "Saltar al contenido",
+    "primaryLabel": "Navegación principal",
+    "mobileLabel": "Navegación móvil"
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Según el sistema"
+  },
+  "locale": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "English"
+  },
+  "hero": {
+    "eyebrow": "Mayorista de tecnología",
+    "title": "Cuatro soluciones. Una sola red de canales.",
+    "subtitle": "Llevamos tecnología de contact center y telecomunicaciones a los canales que atienden México, Centroamérica, el Caribe y Colombia.",
+    "ctaPrimary": "Ver nuestras soluciones",
+    "ctaSecondary": "Hablar con el equipo",
+    "orbitLabel": "Soluciones que distribuye XTT"
+  },
+  "about": {
+    "eyebrow": "Quiénes somos",
+    "title": "Somos un mayorista, no un revendedor más.",
+    "lead": "Empresa 100% mexicana fundada en 2018. Distribuimos tecnología de comunicaciones e inteligencia artificial as a service, y trabajamos exclusivamente a través de canales: nuestro negocio es que a ellos les vaya bien.",
+    "body": "No competimos con nuestros socios por la cuenta final. Aportamos el catálogo, la capacitación, el preventa técnico y el soporte que un canal necesita para vender e implementar sin cargar con la infraestructura ni con la relación directa con cada fabricante.",
+    "missionTitle": "Misión",
+    "mission": "Ser el mayorista que hace crecer a sus canales: acercarles tecnología confiable de contact center y telecomunicaciones, y acompañarlos en la venta, la implementación y el soporte.",
+    "visionTitle": "Visión",
+    "vision": "Construir el ecosistema de distribución más sólido de la región: canales capacitados, fabricantes de primer nivel y clientes que evolucionan sin fricción.",
+    "foundedLabel": "En operación desde"
+  },
+  "solutions": {
+    "eyebrow": "Nuestras soluciones",
+    "title": "Lo que distribuimos",
+    "lead": "Cuatro líneas que se venden solas o combinadas, según lo que cada canal ya atiende.",
+    "ccaas": {
+      "name": "CCaaS",
+      "full": "Contact Center as a Service",
+      "summary": "Centro de contacto en la nube: omnicanalidad, ruteo inteligente y analítica, sin infraestructura propia.",
+      "detail": "Plataformas de contact center operadas como servicio. El canal vende la solución completa —voz, digital, reportería y agentes con asistencia de IA— sin montar ni mantener un solo servidor."
+    },
+    "sbc-telecom-data": {
+      "name": "SBCs y análisis de data telecom",
+      "full": "Session Border Controllers y analítica de tráfico",
+      "summary": "Asegurar y normalizar el tráfico SIP, y convertir el CDR en decisiones.",
+      "detail": "Session Border Controllers para proteger el borde de la red, normalizar señalización entre operadores y resolver interoperabilidad. Encima, la capa de análisis que vuelve el detalle de llamadas en información de consumo, calidad y fraude."
+    },
+    "messaging": {
+      "name": "Mensajería y canales digitales",
+      "full": "Mensajería y canales digitales",
+      "summary": "WhatsApp, SMS, RCS y redes en el mismo flujo de atención que la voz.",
+      "detail": "Canales digitales integrados al centro de contacto, no como una bandeja aparte. Incluye mensajería transaccional, campañas y las APIs para conectarlos con el CRM que el cliente ya usa."
+    },
+    "sip": {
+      "name": "Telefonía SIP",
+      "full": "Troncales y numeración SIP",
+      "summary": "Cobertura regional, portabilidad y calidad medida extremo a extremo.",
+      "detail": "Troncales SIP y numeración con cobertura en la región, con portabilidad y monitoreo de calidad. La base sobre la que se apoyan el contact center y los canales digitales."
+    }
+  },
+  "presence": {
+    "eyebrow": "Presencia",
+    "title": "Dónde operamos",
+    "lead": "Contamos con presencia en México, Centroamérica, el Caribe y Colombia.",
+    "regions": {
+      "mexico": "México",
+      "centroamerica": "Centroamérica",
+      "caribe": "Caribe",
+      "colombia": "Colombia"
+    },
+    "countriesLabel": "Países",
+    "regionsLabel": "Regiones"
+  },
+  "partnerLocator": {
+    "eyebrow": "Partner Locator",
+    "title": "Encuentra un partner",
+    "lead": "Nuestros canales implementan y dan soporte local. Filtra por país o por solución para encontrar al indicado.",
+    "filterCountry": "País",
+    "filterSolution": "Solución",
+    "filterAll": "Todos",
+    "resultsCount": "{count, plural, =0 {Sin partners} =1 {1 partner} other {# partners}}",
+    "empty": "Todavía no publicamos el directorio de partners. Escríbenos y te conectamos con el canal que corresponde a tu país.",
+    "emptyCta": "Contactar a XTT",
+    "visitSite": "Sitio web",
+    "tier": {
+      "platinum": "Platinum",
+      "gold": "Gold",
+      "authorized": "Autorizado"
+    }
+  },
+  "contact": {
+    "eyebrow": "Contacto",
+    "title": "Hablemos de tu operación",
+    "lead": "Cuéntanos qué necesitas resolver y te respondemos con una propuesta concreta, no con un catálogo.",
+    "form": {
+      "name": "Nombre",
+      "email": "Correo",
+      "company": "Empresa",
+      "country": "País",
+      "message": "¿Qué necesitas?",
+      "submit": "Enviar",
+      "sending": "Enviando…",
+      "success": "Mensaje enviado. Te contactamos en menos de un día hábil.",
+      "error": "No pudimos enviar el mensaje. Inténtalo de nuevo o escríbenos directo a {email}.",
+      "required": "Este campo es obligatorio",
+      "invalidEmail": "Revisa el formato del correo",
+      "tooShort": "Cuéntanos un poco más"
+    },
+    "directTitle": "Directo",
+    "phoneLabel": "Teléfono",
+    "emailLabel": "Correo",
+    "addressLabel": "Oficina"
+  },
+  "footer": {
+    "tagline": "Mayorista de soluciones CX y telecomunicaciones.",
+    "sections": "Secciones",
+    "legal": "Legal",
+    "privacy": "Aviso de privacidad",
+    "rights": "Todos los derechos reservados."
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Esta página ya no existe",
+    "lead": "Puede que la hayamos movido al rehacer el sitio.",
+    "cta": "Volver al inicio"
+  }
+}

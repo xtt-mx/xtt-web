@@ -1,0 +1,144 @@
+{
+  "metadata": {
+    "siteName": "XTT",
+    "defaultTitle": "XTT — Wholesale distributor of CX and telecom solutions",
+    "defaultDescription": "Wholesale distributor of contact center, SIP telephony and digital channel technology across Mexico, Central America, the Caribbean and Colombia."
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "solutions": "Solutions",
+    "partnerLocator": "Partner Locator",
+    "contact": "Contact",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "skipToContent": "Skip to content",
+    "primaryLabel": "Main navigation",
+    "mobileLabel": "Mobile navigation"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "Match system"
+  },
+  "locale": {
+    "label": "Language",
+    "es": "Español",
+    "en": "English"
+  },
+  "hero": {
+    "eyebrow": "Technology distributor",
+    "title": "Four solutions. One partner network.",
+    "subtitle": "We bring contact center and telecom technology to the partners serving Mexico, Central America, the Caribbean and Colombia.",
+    "ctaPrimary": "See our solutions",
+    "ctaSecondary": "Talk to the team",
+    "orbitLabel": "Solutions distributed by XTT"
+  },
+  "about": {
+    "eyebrow": "Who we are",
+    "title": "We are a distributor, not another reseller.",
+    "lead": "A 100% Mexican company founded in 2018. We distribute communications and AI-as-a-service technology, and we work exclusively through partners: our business is making theirs work.",
+    "body": "We never compete with our partners for the end account. We provide the catalog, the training, the technical presales and the support a partner needs to sell and deploy — without carrying the infrastructure or managing a direct relationship with every vendor.",
+    "missionTitle": "Mission",
+    "mission": "To be the distributor that grows its partners: bringing them dependable contact center and telecom technology, and standing with them through the sale, the deployment and the support.",
+    "visionTitle": "Vision",
+    "vision": "To build the strongest distribution ecosystem in the region: trained partners, first-tier vendors, and customers who evolve without friction.",
+    "foundedLabel": "Operating since"
+  },
+  "solutions": {
+    "eyebrow": "Our solutions",
+    "title": "What we distribute",
+    "lead": "Four lines that sell on their own or together, depending on what each partner already serves.",
+    "ccaas": {
+      "name": "CCaaS",
+      "full": "Contact Center as a Service",
+      "summary": "Cloud contact center: omnichannel, intelligent routing and analytics, with no infrastructure of your own.",
+      "detail": "Contact center platforms operated as a service. The partner sells the whole solution — voice, digital, reporting and AI-assisted agents — without standing up or maintaining a single server."
+    },
+    "sbc-telecom-data": {
+      "name": "SBCs and telecom data analysis",
+      "full": "Session Border Controllers and traffic analytics",
+      "summary": "Secure and normalize SIP traffic, and turn CDR into decisions.",
+      "detail": "Session Border Controllers to protect the network edge, normalize signaling between carriers and resolve interoperability. On top, the analytics layer that turns call detail into insight on usage, quality and fraud."
+    },
+    "messaging": {
+      "name": "Messaging and digital channels",
+      "full": "Messaging and digital channels",
+      "summary": "WhatsApp, SMS, RCS and social in the same service flow as voice.",
+      "detail": "Digital channels wired into the contact center, not parked in a separate inbox. Includes transactional messaging, campaigns, and the APIs to connect them to the CRM the customer already runs."
+    },
+    "sip": {
+      "name": "SIP telephony",
+      "full": "SIP trunking and numbering",
+      "summary": "Regional coverage, portability and quality measured end to end.",
+      "detail": "SIP trunks and numbering with regional coverage, portability and quality monitoring. The foundation the contact center and the digital channels rest on."
+    }
+  },
+  "presence": {
+    "eyebrow": "Presence",
+    "title": "Where we operate",
+    "lead": "We have presence across Mexico, Central America, the Caribbean and Colombia.",
+    "regions": {
+      "mexico": "Mexico",
+      "centroamerica": "Central America",
+      "caribe": "Caribbean",
+      "colombia": "Colombia"
+    },
+    "countriesLabel": "Countries",
+    "regionsLabel": "Regions"
+  },
+  "partnerLocator": {
+    "eyebrow": "Partner Locator",
+    "title": "Find a partner",
+    "lead": "Our partners deploy and support locally. Filter by country or solution to find the right one.",
+    "filterCountry": "Country",
+    "filterSolution": "Solution",
+    "filterAll": "All",
+    "resultsCount": "{count, plural, =0 {No partners} =1 {1 partner} other {# partners}}",
+    "empty": "We have not published the partner directory yet. Write to us and we will connect you with the partner covering your country.",
+    "emptyCta": "Contact XTT",
+    "visitSite": "Website",
+    "tier": {
+      "platinum": "Platinum",
+      "gold": "Gold",
+      "authorized": "Authorized"
+    }
+  },
+  "contact": {
+    "eyebrow": "Contact",
+    "title": "Let's talk about your operation",
+    "lead": "Tell us what you need to solve and we answer with a concrete proposal, not a catalog.",
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "company": "Company",
+      "country": "Country",
+      "message": "What do you need?",
+      "submit": "Send",
+      "sending": "Sending…",
+      "success": "Message sent. We will get back to you within one business day.",
+      "error": "We could not send your message. Try again or write to us directly at {email}.",
+      "required": "This field is required",
+      "invalidEmail": "Check the email format",
+      "tooShort": "Tell us a little more"
+    },
+    "directTitle": "Direct",
+    "phoneLabel": "Phone",
+    "emailLabel": "Email",
+    "addressLabel": "Office"
+  },
+  "footer": {
+    "tagline": "Wholesale distributor of CX and telecom solutions.",
+    "sections": "Sections",
+    "legal": "Legal",
+    "privacy": "Privacy notice",
+    "rights": "All rights reserved."
+  },
+  "notFound": {
+    "code": "404",
+    "title": "This page no longer exists",
+    "lead": "We may have moved it while rebuilding the site.",
+    "cta": "Back to home"
+  }
+}

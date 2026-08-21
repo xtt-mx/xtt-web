@@ -1,0 +1,29 @@
+# dependencias
+node_modules/
+.pnpm-store/
+
+# build
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# entorno — el template SÍ se versiona
+.env
+.env.*
+!.env.example
+
+# tests
+e2e/.report/
+e2e/.results/
+playwright-report/
+test-results/
+
+# editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# assets de marca en crudo (pesados, y el PDF no debe ir a un repo que algún día se abra)
+brand-source/

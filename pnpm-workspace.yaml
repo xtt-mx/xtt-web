@@ -1,0 +1,16 @@
+# pnpm no ejecuta postinstall scripts salvo que se aprueben aquí de forma explícita.
+# Solo habilitamos los que realmente necesitan compilar un binario nativo.
+allowBuilds:
+  # Resolver nativo que usa eslint-import-resolver-typescript; sin build, el lint
+  # cae a un resolver JS mucho más lento.
+  unrs-resolver: true
+  # No los usamos: Next 16 trae su propio SWC precompilado y no corremos watchers de Parcel.
+  '@swc/core': false
+  '@parcel/watcher': false
+
+# pnpm 11 aplica una cuarentena por antigüedad a paquetes nuevos. Next 16.3.2 y su
+# toolchain son la versión que fijamos deliberadamente, así que se excluyen.
+minimumReleaseAgeExclude:
+  - 'next@16.3.2'
+  - 'eslint-config-next@16.3.2'
+  - '@next/*'

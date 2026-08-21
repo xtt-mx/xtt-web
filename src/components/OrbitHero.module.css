@@ -1,0 +1,248 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+/* Asimétrico: la copy ocupa menos que el escenario, y el conjunto no está
+   centrado en la página. Dos mitades iguales es lo que hace toda plantilla. */
+.inner {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 64px;
+  min-height: min(84vh, 760px);
+  padding-block: 72px;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.eyebrow {
+  animation: reveal-fade 700ms var(--ease-out-quart) both;
+}
+
+.title {
+  /* Se apoya en la condensada del manual: crece mucho sin romper el ancho. */
+  font-size: clamp(2.75rem, 6.5vw, 5.25rem);
+  max-width: 14ch;
+  animation: reveal-fade 700ms var(--ease-out-quart) both;
+  animation-delay: 80ms;
+}
+
+.subtitle {
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  max-width: 46ch;
+  animation: reveal-fade 700ms var(--ease-out-quart) both;
+  animation-delay: 160ms;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+  animation: reveal-fade 700ms var(--ease-out-quart) both;
+  animation-delay: 240ms;
+}
+
+/* --- Escenario orbital ---------------------------------------------------- */
+
+.stage {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+  display: grid;
+  place-items: center;
+}
+
+.rings {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+/* 70% y no 100%: los nodos se apoyan en este anillo, y una etiqueta de 168 px
+   centrada sobre el borde del escenario dejaría la mitad fuera del recorte. */
+.ring {
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border: 1px dashed var(--color-rule-strong);
+  border-radius: 50%;
+  opacity: 0.7;
+}
+
+.ringInner {
+  width: 40%;
+  height: 40%;
+  border-style: solid;
+  border-color: var(--color-rule);
+  opacity: 1;
+}
+
+.core {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 26%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-rule-strong);
+}
+
+.coreLogo {
+  font-size: clamp(1.75rem, 5vw, 3rem);
+}
+
+.orbit {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  z-index: 3;
+}
+
+/*
+  Cada nodo se posiciona rotando el eje --angle y empujando el hijo hacia el
+  borde. La contra-rotación en .nodeInner mantiene el texto horizontal mientras
+  el eje gira: sin ella las etiquetas darían vueltas y serían ilegibles.
+
+  El reparto en la circunferencia lo hace SOLO --angle. Nada de escalonar con
+  animation-delay: la fase negativa se sumaría al ángulo inicial y los cuatro
+  nodos terminarían apilados de dos en dos. Todos giran en fase y conservan su
+  separación.
+*/
+.node {
+  position: absolute;
+  /* inset 15% => caja al 70% del escenario => los nodos caen justo sobre .ring. */
+  inset: 15%;
+  display: grid;
+  place-items: center;
+  transform: rotate(var(--angle));
+  animation: orbit-spin 48s linear infinite;
+}
+
+.nodeInner {
+  position: absolute;
+  top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* Cabe el nombre completo de la solución en dos líneas en vez de recortarlo:
+     "SBCs y análisis de data telecom" en una sola línea desborda el escenario. */
+  max-width: 168px;
+  padding: 8px 14px;
+  transform: translateY(-50%) rotate(calc(var(--angle) * -1));
+  background: var(--color-bg);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-sm);
+  animation: orbit-counter-spin 48s linear infinite;
+}
+
+.nodeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex: none;
+}
+
+.nodeLabel {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-fg);
+}
+
+@keyframes orbit-spin {
+  to {
+    transform: rotate(calc(var(--angle) + 360deg));
+  }
+}
+
+@keyframes orbit-counter-spin {
+  to {
+    transform: translateY(-50%) rotate(calc((var(--angle) + 360deg) * -1));
+  }
+}
+
+/* --- Móvil: la órbita se convierte en lista ------------------------------- */
+
+@media (max-width: 900px) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    min-height: 0;
+    padding-block: 56px;
+  }
+
+  .stage {
+    aspect-ratio: auto;
+    max-width: none;
+    display: block;
+  }
+
+  .rings,
+  .core {
+    display: none;
+  }
+
+  .orbit {
+    position: static;
+    border-top: 1px solid var(--color-rule);
+  }
+
+  .node {
+    position: static;
+    display: block;
+    transform: none;
+    animation: none;
+    border-bottom: 1px solid var(--color-rule);
+  }
+
+  .nodeInner {
+    position: static;
+    display: flex;
+    width: 100%;
+    /* Se libera el tope que la órbita necesita: aquí la etiqueta ocupa la fila. */
+    max-width: none;
+    padding: 18px 2px;
+    transform: none;
+    animation: none;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .nodeLabel {
+    font-size: 0.875rem;
+  }
+}
+
+/* La regla global de prefers-reduced-motion ya neutraliza las animaciones; aquí
+   solo se recentra la composición para que el estado congelado se vea armado y
+   no como una órbita detenida a la mitad. */
+@media (prefers-reduced-motion: reduce) {
+  .node {
+    transform: rotate(var(--angle));
+  }
+
+  .nodeInner {
+    transform: translateY(-50%) rotate(calc(var(--angle) * -1));
+  }
+}
