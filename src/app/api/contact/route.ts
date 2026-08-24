@@ -7,6 +7,16 @@ import { clientKey, rateLimit } from '@/lib/rate-limit';
  * El navegador NUNCA habla con n8n directamente. Postear al webhook desde el
  * cliente publicaría su URL en el HTML, obligaría a resolver CORS y dejaría el
  * endpoint abierto a cualquiera. Este handler es el que valida, limita y firma.
+ *
+ * El orden de los pasos importa y es deliberado:
+ *
+ *   1. Rate limit  — lo más barato primero; corta antes de parsear nada.
+ *   2. Validación  — un cuerpo malformado es error del CLIENTE, y se responde
+ *                    400 aunque el servidor esté mal configurado. Comprobar la
+ *                    configuración antes haría que un correo inválido devolviera
+ *                    503, culpando al servidor de un error del cliente.
+ *   3. Trampas     — honeypot y tiempo mínimo.
+ *   4. Configuración y reenvío.
  */
 
 /** 5 envíos por IP cada 10 minutos. Suficiente para corregir y reintentar. */
@@ -17,16 +27,6 @@ const json = (body: unknown, status: number, headers?: HeadersInit) =>
   Response.json(body, { status, headers });
 
 export const POST = async (request: Request) => {
-  const webhookUrl = process.env.N8N_CONTACT_WEBHOOK_URL;
-  const webhookSecret = process.env.N8N_WEBHOOK_SECRET;
-
-  // Sin configuración no se finge que funciona: es un fallo de despliegue y
-  // debe verse como tal, no como "gracias, te contactamos pronto".
-  if (!webhookUrl || !webhookSecret) {
-    console.error('[contact] falta N8N_CONTACT_WEBHOOK_URL o N8N_WEBHOOK_SECRET');
-    return json({ error: 'unavailable' }, 503);
-  }
-
   const limit = rateLimit(`contact:${clientKey(request)}`, {
     limit: LIMIT,
     windowMs: WINDOW_MS,
@@ -71,6 +71,16 @@ export const POST = async (request: Request) => {
   if (website || tooFast) {
     console.warn('[contact] descartado', { honeypot: Boolean(website), tooFast });
     return json({ ok: true }, 200);
+  }
+
+  const webhookUrl = process.env.N8N_CONTACT_WEBHOOK_URL;
+  const webhookSecret = process.env.N8N_WEBHOOK_SECRET;
+
+  // Sin configuración no se finge que funciona: es un fallo de despliegue y
+  // debe verse como tal, no como "gracias, te contactamos pronto".
+  if (!webhookUrl || !webhookSecret) {
+    console.error('[contact] falta N8N_CONTACT_WEBHOOK_URL o N8N_WEBHOOK_SECRET');
+    return json({ error: 'unavailable' }, 503);
   }
 
   try {
