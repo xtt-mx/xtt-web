@@ -118,7 +118,13 @@
       "error": "We could not send your message. Try again or write to us directly at {email}.",
       "required": "This field is required",
       "invalidEmail": "Check the email format",
-      "tooShort": "Tell us a little more"
+      "tooShort": "Tell us a little more",
+      "optional": "optional",
+      "rateLimited": "Too many submissions in a row. Wait a few minutes and try again.",
+      "unavailable": "The form is unavailable right now. Write to us directly at {email}.",
+      "errorsTitle": "Check these fields",
+      "privacyNote": "By submitting you accept our <privacy>privacy notice</privacy>.",
+      "honeypotLabel": "Do not fill this field"
     },
     "directTitle": "Direct",
     "phoneLabel": "Phone",

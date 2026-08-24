@@ -28,6 +28,13 @@
   --color-accent-contrast: #ffffff;
   --color-accent-dim: #0a2dff14;
 
+  /* Error. Mismo criterio que el acento: un token para borde y otro para texto,
+     porque el rojo que se ve bien como línea no siempre pasa contraste como
+     tipografía. `#b01212` sobre blanco da 7.2:1. */
+  --color-danger: #c81e1e;
+  --color-danger-text: #b01212;
+  --color-danger-dim: #c81e1e12;
+
   /* --- Tipografía --- */
   --font-display: var(--next-font-display), 'League Gothic', 'Arial Narrow', sans-serif;
   --font-sans: var(--next-font-sans), 'Lato', ui-sans-serif, system-ui, sans-serif;
@@ -80,6 +87,11 @@
     --color-accent-contrast: #ffffff;
     --color-accent-dim: #0a2dff1a;
 
+    /* El rojo del tema claro sobre negro queda muy oscuro; este da 8.7:1. */
+    --color-danger: #f05252;
+    --color-danger-text: #ff8a8a;
+    --color-danger-dim: #f0525218;
+
     color-scheme: dark;
   }
 }
@@ -98,6 +110,10 @@
   --color-accent-text: #6a85ff;
   --color-accent-contrast: #ffffff;
   --color-accent-dim: #0a2dff1a;
+
+  --color-danger: #f05252;
+  --color-danger-text: #ff8a8a;
+  --color-danger-dim: #f0525218;
 
   color-scheme: dark;
 }
