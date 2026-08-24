@@ -5,7 +5,10 @@ import type { Solution, SolutionId } from './types';
  * las enumeró en el brief.
  *
  * Nombres y descripciones NO viven aquí: son copy y van en `messages/{es,en}.json`
- * bajo `solutions.<id>`. Aquí solo vive lo estructural (orden, slug, ícono).
+ * bajo `solutions.<id>`. Aquí solo vive lo estructural: el orden y el slug.
+ *
+ * El ícono tampoco: es un componente de React y este módulo no importa runtime
+ * del framework. El mapa está en `SolutionRow.tsx`.
  *
  * PENDIENTE DE CONFIRMAR CON SERGIO: el brief decía "CCAS" y "SBCEs", que asumimos
  * typos de CCaaS y SBC (Session Border Controller). Ver README §Status.
@@ -14,22 +17,18 @@ export const solutions: readonly Solution[] = [
   {
     id: 'ccaas',
     slug: { es: 'ccaas', en: 'ccaas' },
-    icon: 'Headset',
   },
   {
     id: 'sbc-telecom-data',
     slug: { es: 'sbc-y-analisis-de-datos', en: 'sbc-and-telecom-data' },
-    icon: 'ShieldCheck',
   },
   {
     id: 'messaging',
     slug: { es: 'mensajeria-y-canales-digitales', en: 'messaging-and-digital-channels' },
-    icon: 'MessagesSquare',
   },
   {
     id: 'sip',
     slug: { es: 'telefonia-sip', en: 'sip-telephony' },
-    icon: 'PhoneCall',
   },
 ] as const;
 

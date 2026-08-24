@@ -10,9 +10,9 @@ ES/EN, tema claro/oscuro, desplegado en el VPS de Hostinger que XTT ya paga.
 - **Correr:** `pnpm install && pnpm dev` → http://localhost:3000
 - **Idiomas:** español en la raíz (`/nosotros`), inglés prefijado (`/en/about`).
 - **Temas:** un botón en el header alterna claro ↔ oscuro; sin tocarlo, manda el sistema.
-- **Tests:** `pnpm test:e2e` — 2 proyectos (escritorio y móvil).
+- **Tests:** `pnpm test:e2e` — 42 pasando, 2 proyectos (escritorio y móvil).
 - **Reglas del repo:** [CLAUDE.md](CLAUDE.md). Léelo antes del primer PR.
-- **Estado:** fundaciones y home listas. Ver [Status & completeness](#status--completeness)
+- **Estado:** home, Nosotros y Soluciones listas. Ver [Status & completeness](#status--completeness)
   para la lista honesta de lo que falta.
 
 ## El detalle que confunde una vez
@@ -74,8 +74,9 @@ node scripts/check-redirects.mjs https://nuevo.xtt.com.mx
 
 ## Status & completeness
 
-Lectura honesta para handoff: **~25% hacia el lanzamiento**. Las fundaciones están y
-son sólidas; falta la mayor parte del contenido.
+Lectura honesta para handoff: **~40% hacia el lanzamiento**. Las fundaciones están y
+son sólidas, y tres de los cinco apartados del nav ya existen. Falta el Partner
+Locator, Contacto y el SEO.
 
 ### ✅ Funcionando de punta a punta
 
@@ -86,6 +87,9 @@ son sólidas; falta la mayor parte del contenido.
 | i18n            | ES/EN con slugs traducidos, sin autodetección, switcher que conserva la ruta |
 | Home            | Hero orbital en CSS puro, degrada a lista en móvil, respeta reduced-motion   |
 | Header / Footer | Nav de 5 apartados, menú móvil con Escape y bloqueo de scroll, skip link     |
+| Nosotros        | Misión y visión en layout espejado, cifra de fundación, metadata por locale  |
+| Soluciones      | Las 4 líneas en filas alternadas con hairlines, numeradas, no un grid        |
+| Ruteo           | Matcher del proxy con regresión propia: páginas, route handlers y estáticos  |
 | Tooling         | ESLint 9 flat, Prettier, husky, commitlint, CI con lint/typecheck/build/e2e  |
 | Redirects       | 28 rutas del WordPress mapeadas, con script de verificación                  |
 
@@ -103,7 +107,6 @@ son sólidas; falta la mayor parte del contenido.
 
 | Área                                                    | Prioridad               | Esfuerzo  |
 | ------------------------------------------------------- | ----------------------- | --------- |
-| Páginas Nosotros y Soluciones                           | Alta                    | 2 d       |
 | Presencia + Partner Locator (SVG de la región, filtros) | Alta                    | 3–4 d     |
 | Página y endpoint de Contacto (Zod, SMTP, antispam)     | Alta                    | 1–2 d     |
 | `robots.ts`, `sitemap.ts`, JSON-LD                      | Media                   | medio día |

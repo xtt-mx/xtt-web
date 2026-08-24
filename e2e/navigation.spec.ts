@@ -55,11 +55,7 @@ test.describe('Navegación e idioma', () => {
     );
   });
 
-  // Desbloquea cuando exista /nosotros (fase 4). Hoy la ruta no está construida,
-  // así que el switcher aterrizaría en un 404 y el test mediría el 404, no el switcher.
-  test.fixme('el switcher conserva la página actual al cambiar de idioma', async ({
-    page,
-  }) => {
+  test('el switcher conserva la página actual al cambiar de idioma', async ({ page }) => {
     await page.goto('/en/about');
 
     await page.getByRole('button', { name: 'Español' }).click();
