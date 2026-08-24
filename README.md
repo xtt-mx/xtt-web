@@ -10,9 +10,9 @@ ES/EN, tema claro/oscuro, desplegado en el VPS de Hostinger que XTT ya paga.
 - **Correr:** `pnpm install && pnpm dev` → http://localhost:3000
 - **Idiomas:** español en la raíz (`/nosotros`), inglés prefijado (`/en/about`).
 - **Temas:** un botón en el header alterna claro ↔ oscuro; sin tocarlo, manda el sistema.
-- **Tests:** `pnpm test:e2e` — 42 pasando, 2 proyectos (escritorio y móvil).
+- **Tests:** `pnpm test:e2e` — 70 pasando, 2 proyectos (escritorio y móvil).
 - **Reglas del repo:** [CLAUDE.md](CLAUDE.md). Léelo antes del primer PR.
-- **Estado:** home, Nosotros y Soluciones listas. Ver [Status & completeness](#status--completeness)
+- **Estado:** home, Nosotros, Soluciones y Contacto listas. Ver [Status & completeness](#status--completeness)
   para la lista honesta de lo que falta.
 
 ## El detalle que confunde una vez
@@ -74,9 +74,9 @@ node scripts/check-redirects.mjs https://nuevo.xtt.com.mx
 
 ## Status & completeness
 
-Lectura honesta para handoff: **~40% hacia el lanzamiento**. Las fundaciones están y
-son sólidas, y tres de los cinco apartados del nav ya existen. Falta el Partner
-Locator, Contacto y el SEO.
+Lectura honesta para handoff: **~50% hacia el lanzamiento**. Las fundaciones están y
+son sólidas, y cuatro de los cinco apartados del nav ya existen. Falta el Partner
+Locator, el aviso de privacidad y el SEO.
 
 ### ✅ Funcionando de punta a punta
 
@@ -91,6 +91,7 @@ Locator, Contacto y el SEO.
 | Soluciones      | Las 4 líneas en filas alternadas con hairlines, numeradas, no un grid        |
 | Ruteo           | Matcher del proxy con regresión propia: páginas, route handlers y estáticos  |
 | Tooling         | ESLint 9 flat, Prettier, husky, commitlint, CI con lint/typecheck/build/e2e  |
+| Contacto        | Formulario con Zod compartido, honeypot, rate limit y reenvío a n8n          |
 | Redirects       | 28 rutas del WordPress mapeadas, con script de verificación                  |
 
 ### ⚠️ Cableado, sin verificar contra la realidad
@@ -98,7 +99,7 @@ Locator, Contacto y el SEO.
 | Área              | Hecho                                                                              | Falta                                                                                                                                                |
 | ----------------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Docker / Caddy    | Dockerfile multi-stage, compose, healthcheck, TLS automático                       | Nunca se corrió en el VPS real. Falta el acceso SSH.                                                                                                 |
-| SMTP de contacto  | `.env.example` documentado, endpoint pendiente                                     | Credenciales reales; probar entrega y spam                                                                                                           |
+| Contacto → n8n    | Endpoint, validación, honeypot, rate limit y tests; probado contra un n8n simulado | Falta el workflow real en n8n y la credencial del buzón de XTT. Sin `N8N_CONTACT_WEBHOOK_URL` el endpoint responde 503, nunca un falso éxito.        |
 | Metadata / OG     | `metadataBase`, títulos, canonicals, hreflang                                      | Falta la imagen OG; hoy no hay ninguna                                                                                                               |
 | Logo              | Vector real trazado del entregable del cliente, como máscara CSS que sigue el tema | Los archivos que entregó XTT eran PNG dentro de un `<svg>`; este trazo difiere 0.73 % del original pero **no es el archivo maestro de la marca**.    |
 | Branch protection | CI, CODEOWNERS y plantillas de PR listas                                           | GitHub rechaza proteger `main` en repos privados sin plan Pro. Hoy nada impide un push directo. Se resuelve con Pro (~4 USD/mes) o abriendo el repo. |
@@ -108,7 +109,6 @@ Locator, Contacto y el SEO.
 | Área                                                    | Prioridad               | Esfuerzo  |
 | ------------------------------------------------------- | ----------------------- | --------- |
 | Presencia + Partner Locator (SVG de la región, filtros) | Alta                    | 3–4 d     |
-| Página y endpoint de Contacto (Zod, SMTP, antispam)     | Alta                    | 1–2 d     |
 | `robots.ts`, `sitemap.ts`, JSON-LD                      | Media                   | medio día |
 | Página de aviso de privacidad (migrar del WordPress)    | Media — requisito legal | medio día |
 | Imágenes OG y favicon                                   | Media                   | medio día |

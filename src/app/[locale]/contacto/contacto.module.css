@@ -1,0 +1,226 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 72px;
+  padding-block: 64px;
+}
+
+/* --- Formulario ----------------------------------------------------------- */
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* El mensaje ocupa las dos columnas: es el campo que de verdad importa. */
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--color-fg-3);
+}
+
+.input {
+  padding: 11px 13px;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-size: 0.9375rem;
+  transition: border-color var(--dur-fast) var(--ease-out-quart);
+}
+
+.input:hover {
+  border-color: var(--color-fg-3);
+}
+
+.input:focus-visible {
+  border-color: var(--color-accent-text);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 140px;
+  line-height: 1.6;
+}
+
+/* El error no se comunica solo con color: el borde cambia, aparece un texto
+   debajo y el campo lleva aria-invalid. Quien no distingue rojo lo percibe.
+
+   Se escribe `.input.inputError` y no `.inputError` a secas: `.input` define el
+   borde con el shorthand `border`, y a igual especificidad el resultado depende
+   del orden en que el bundler emita las reglas. Con la doble clase el estado de
+   error gana siempre. */
+.input.inputError {
+  /* Shorthand completo y no solo `border-color`: `.input` declara el borde con
+     el shorthand `border`, y el longhand suelto no siempre gana contra él una
+     vez que el bundler reordena las declaraciones. */
+  border: 1px solid var(--color-danger);
+}
+
+.fieldError {
+  font-size: 0.8125rem;
+  color: var(--color-danger-text);
+}
+
+/* --- Resumen de errores --------------------------------------------------- */
+
+.summary {
+  grid-column: 1 / -1;
+  padding: 14px 16px;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-dim);
+}
+
+/* Se oculta sin desmontar, para que el `role="alert"` siga presente en el DOM
+   y el navegador lo anuncie cuando aparezca contenido. */
+.hidden {
+  display: none;
+}
+
+.summaryTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-danger-text);
+  margin-bottom: 6px;
+}
+
+.summaryList {
+  margin: 0;
+  padding-inline-start: 18px;
+  font-size: 0.875rem;
+}
+
+.summaryList a {
+  color: var(--color-danger-text);
+  text-decoration: underline;
+}
+
+/* --- Honeypot -------------------------------------------------------------
+   Fuera de pantalla en vez de `display: none`: algunos bots ignoran los campos
+   ocultos por display, pero sí rellenan los que están posicionados fuera.
+   -------------------------------------------------------------------------- */
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* --- Acciones y mensajes -------------------------------------------------- */
+
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 20px;
+  margin-top: 4px;
+}
+
+.privacy {
+  font-size: 0.8125rem;
+}
+
+.privacyLink {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+}
+
+.formError {
+  grid-column: 1 / -1;
+  padding: 12px 14px;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-dim);
+  color: var(--color-danger-text);
+  font-size: 0.875rem;
+}
+
+.success {
+  padding: 20px 22px;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-dim);
+  font-size: 1.0625rem;
+}
+
+/* --- Datos directos ------------------------------------------------------- */
+
+.direct {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-inline-start: 40px;
+  border-inline-start: 1px solid var(--color-rule);
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+
+.term {
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-fg-3);
+  margin-top: 14px;
+}
+
+.value {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.link {
+  color: var(--color-fg);
+  border-bottom: 1px solid var(--color-rule-strong);
+  transition: border-color var(--dur-fast) var(--ease-out-quart);
+}
+
+.link:hover {
+  border-color: var(--color-accent-text);
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 44px;
+    padding-block: 44px;
+  }
+
+  .direct {
+    padding-inline-start: 0;
+    padding-block-start: 32px;
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--color-rule);
+  }
+}
+
+@media (max-width: 620px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+}
