@@ -55,7 +55,12 @@ export const generateMetadata = async ({
       title: t('defaultTitle'),
       description: t('defaultDescription'),
     },
-    robots: { index: true, follow: true },
+    /**
+     * Sin `robots`: `index, follow` ya es el comportamiento por defecto de los
+     * rastreadores cuando no hay meta, así que declararlo no cambiaba nada.
+     * Lo que sí hacía era pisar el `noindex` que Next emite solo en el 404,
+     * dejando dos directivas contradictorias en la misma página.
+     */
   };
 };
 

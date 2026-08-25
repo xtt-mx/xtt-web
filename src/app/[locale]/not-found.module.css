@@ -1,0 +1,29 @@
+.wrap {
+  padding-block: 120px 140px;
+}
+
+/* El código pesa menos que el mensaje: quien llega aquí necesita saber qué
+   pasó y cómo salir, no leer un número gigante. */
+.code {
+  color: var(--color-fg-3);
+}
+
+.title {
+  margin-block: 18px;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 0.95;
+  max-width: 16ch;
+}
+
+.lead {
+  margin-bottom: 28px;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  max-width: 46ch;
+}
+
+@media (max-width: 880px) {
+  .wrap {
+    padding-block: 72px 88px;
+  }
+}
