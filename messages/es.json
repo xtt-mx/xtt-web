@@ -118,7 +118,13 @@
       "error": "No pudimos enviar el mensaje. Inténtalo de nuevo o escríbenos directo a {email}.",
       "required": "Este campo es obligatorio",
       "invalidEmail": "Revisa el formato del correo",
-      "tooShort": "Cuéntanos un poco más"
+      "tooShort": "Cuéntanos un poco más",
+      "optional": "opcional",
+      "rateLimited": "Demasiados envíos seguidos. Espera unos minutos e inténtalo de nuevo.",
+      "unavailable": "El formulario no está disponible en este momento. Escríbenos directo a {email}.",
+      "errorsTitle": "Revisa estos campos",
+      "privacyNote": "Al enviar aceptas nuestro <privacy>aviso de privacidad</privacy>.",
+      "honeypotLabel": "No llenes este campo"
     },
     "directTitle": "Directo",
     "phoneLabel": "Teléfono",
