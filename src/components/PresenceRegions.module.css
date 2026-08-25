@@ -1,0 +1,80 @@
+.presence {
+  background-color: var(--color-bg-2);
+  border-top: 1px solid var(--color-rule);
+}
+
+.inner {
+  padding-block: 72px 88px;
+}
+
+.title {
+  margin: 12px 0 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 0.95;
+}
+
+.lead {
+  margin: 16px 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  max-width: 46ch;
+}
+
+.regions {
+  margin: 48px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Fila y no tarjeta: las regiones tienen uno o siete países, y cuatro cajas
+   iguales sugerirían un peso comercial que no comparten. */
+.region {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 40px;
+  padding-block: 28px;
+  border-top: 1px solid var(--color-rule);
+}
+
+.region:last-child {
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.regionName {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.5vw, 2.125rem);
+  line-height: 1;
+}
+
+.countries {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.country {
+  font-size: 0.8125rem;
+  color: var(--color-fg-2);
+}
+
+@media (max-width: 880px) {
+  .inner {
+    padding-block: 52px 64px;
+  }
+
+  .regions {
+    margin-top: 32px;
+  }
+
+  /* Una sola columna: contra 200px fijos, los siete países de Centroamérica se
+     partían en cuatro líneas y la fila perdía el ritmo de las demás. */
+  .region {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    padding-block: 22px;
+  }
+}
