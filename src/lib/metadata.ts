@@ -8,7 +8,7 @@ import type { AppPathname } from '@/i18n/routing';
 interface PageMetadataOptions {
   readonly locale: string;
   /** Namespace de mensajes del que salen `title` y `lead`. */
-  readonly namespace: 'about' | 'solutions' | 'partnerLocator' | 'contact';
+  readonly namespace: 'about' | 'solutions' | 'partnerLocator' | 'contact' | 'privacy';
   readonly pathname: AppPathname;
 }
 
