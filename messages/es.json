@@ -83,7 +83,22 @@
       "colombia": "Colombia"
     },
     "countriesLabel": "Países",
-    "regionsLabel": "Regiones"
+    "regionsLabel": "Regiones",
+    "countries": {
+      "MX": "México",
+      "GT": "Guatemala",
+      "BZ": "Belice",
+      "SV": "El Salvador",
+      "HN": "Honduras",
+      "NI": "Nicaragua",
+      "CR": "Costa Rica",
+      "PA": "Panamá",
+      "CO": "Colombia",
+      "DO": "República Dominicana",
+      "PR": "Puerto Rico",
+      "JM": "Jamaica",
+      "TT": "Trinidad y Tobago"
+    }
   },
   "partnerLocator": {
     "eyebrow": "Partner Locator",
