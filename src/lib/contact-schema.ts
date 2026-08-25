@@ -41,6 +41,26 @@ export type ContactInput = z.infer<typeof contactSchema>;
 export const MIN_FILL_MS = 3_000;
 
 /**
+ * ¿El formulario se llenó demasiado rápido para que lo hiciera una persona?
+ *
+ * Es una función y no una resta suelta en el handler porque el caso que importa
+ * no se puede observar desde fuera del endpoint: un envío descartado responde
+ * `200` igual que uno enviado —a propósito, para no darle pistas al bot—, así
+ * que una prueba de extremo a extremo no distingue uno de otro. Aquí sí.
+ *
+ * `startedAt` viene del reloj del navegador. Si va adelantado respecto al del
+ * servidor, el intervalo sale negativo; la versión ingenua `elapsed < MIN` lo
+ * tomaba por bot y descartaba a una persona real en silencio. Cuando el
+ * intervalo no es medible se ignora la señal en vez de asumir lo peor: el
+ * honeypot sigue cubriendo, y mandar un `startedAt` futuro no le da al bot nada
+ * que no lograra ya mandando uno muy viejo.
+ */
+export const isTooFast = (startedAt: number, now: number): boolean => {
+  const elapsed = now - startedAt;
+  return elapsed >= 0 && elapsed < MIN_FILL_MS;
+};
+
+/**
  * Campos que el usuario ve y puede corregir. El honeypot y el timestamp quedan
  * fuera: si fallan, no se le dice al bot cuál de los dos lo delató.
  */

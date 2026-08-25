@@ -1,4 +1,4 @@
-import { contactSchema, MIN_FILL_MS } from '@/lib/contact-schema';
+import { contactSchema, isTooFast } from '@/lib/contact-schema';
 import { clientKey, rateLimit } from '@/lib/rate-limit';
 
 /**
@@ -67,10 +67,18 @@ export const POST = async (request: Request) => {
    * invita a reintentar afinando; un 200 lo deja creer que funcionó y seguir su
    * camino. El mensaje simplemente no se envía a nadie.
    */
-  const tooFast = Date.now() - startedAt < MIN_FILL_MS;
+  const now = Date.now();
+  const tooFast = isTooFast(startedAt, now);
+
   if (website || tooFast) {
     console.warn('[contact] descartado', { honeypot: Boolean(website), tooFast });
     return json({ ok: true }, 200);
+  }
+
+  // Se registra, pero no descarta: ver `isTooFast`. Un reloj adelantado es del
+  // visitante, no una señal de bot, y descartarlo perdía el lead en silencio.
+  if (startedAt > now) {
+    console.warn('[contact] reloj del cliente adelantado', { skewMs: startedAt - now });
   }
 
   const webhookUrl = process.env.N8N_CONTACT_WEBHOOK_URL;
