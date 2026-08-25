@@ -158,5 +158,45 @@
     "title": "Esta página ya no existe",
     "lead": "Puede que la hayamos movido al rehacer el sitio.",
     "cta": "Volver al inicio"
+  },
+  "privacy": {
+    "eyebrow": "Legal",
+    "title": "Aviso de privacidad",
+    "lead": "Cómo recopilamos, usamos, compartimos y protegemos tu información personal.",
+    "updatedLabel": "Última actualización",
+    "updated": "1 de enero de 2024",
+    "intro": "En Expertise Tech and Training nos comprometemos a proteger su privacidad y la seguridad de la información que usted proporciona cuando utiliza nuestros servicios. Esta Política de Privacidad describe cómo recopilamos, utilizamos, compartimos y protegemos su información personal.",
+    "sections": {
+      "collect": {
+        "title": "Información que recopilamos",
+        "body": "Recopilamos información personal que usted proporciona directamente al utilizar nuestros servicios, como su nombre, dirección de correo electrónico, número de teléfono, y otra información necesaria para llevar a cabo nuestras operaciones comerciales."
+      },
+      "use": {
+        "title": "Uso de la información",
+        "body": "Utilizamos la información recopilada para proporcionar, mantener y mejorar nuestros servicios, así como para cumplir con nuestras obligaciones legales. Esto incluye, entre otras cosas, la personalización de la experiencia del usuario, la comunicación con usted sobre nuestros productos y servicios, y la prevención de actividades fraudulentas."
+      },
+      "share": {
+        "title": "Compartir información",
+        "body": "No vendemos ni compartimos su información personal con terceros no afiliados, excepto en situaciones limitadas donde sea necesario para la prestación de servicios o para cumplir con obligaciones legales. Nos aseguramos de que cualquier tercero que tenga acceso a su información cumpla con estándares de privacidad y seguridad adecuados."
+      },
+      "security": {
+        "title": "Seguridad de la información",
+        "body": "Implementamos medidas de seguridad técnicas y administrativas para proteger su información contra accesos no autorizados, divulgación, alteración y destrucción."
+      },
+      "rights": {
+        "title": "Acceso y control de su información",
+        "body": "Usted tiene el derecho de acceder, corregir y eliminar su información personal. Puede ejercer estos derechos poniéndose en contacto con nosotros a través de los canales proporcionados al final de este aviso."
+      },
+      "changes": {
+        "title": "Cambios en la política de privacidad",
+        "body": "Nos reservamos el derecho de modificar esta Política de Privacidad en cualquier momento. Cualquier cambio será efectivo inmediatamente después de la publicación de la versión actualizada en nuestro sitio web. Le recomendamos revisar periódicamente esta Política para estar al tanto de cualquier cambio."
+      },
+      "contact": {
+        "title": "Contacto",
+        "body": "Si tiene preguntas o inquietudes sobre esta Política de Privacidad, o si desea ejercer sus derechos de privacidad, puede ponerse en contacto con nosotros a través de correo electrónico:"
+      }
+    },
+    "contactEmail": "contacto.xtt@xtt.com.mx",
+    "acceptance": "Al utilizar nuestros servicios, usted acepta los términos de esta Política de Privacidad."
   }
 }

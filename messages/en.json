@@ -158,5 +158,46 @@
     "title": "This page no longer exists",
     "lead": "We may have moved it while rebuilding the site.",
     "cta": "Back to home"
+  },
+  "privacy": {
+    "eyebrow": "Legal",
+    "title": "Privacy notice",
+    "lead": "How we collect, use, share and protect your personal information.",
+    "updatedLabel": "Last updated",
+    "updated": "1 January 2024",
+    "intro": "At Expertise Tech and Training we are committed to protecting your privacy and the security of the information you provide when using our services. This Privacy Policy describes how we collect, use, share and protect your personal information.",
+    "sections": {
+      "collect": {
+        "title": "Information we collect",
+        "body": "We collect personal information that you provide directly when using our services, such as your name, email address, telephone number, and other information necessary to carry out our business operations."
+      },
+      "use": {
+        "title": "Use of information",
+        "body": "We use the information collected to provide, maintain and improve our services, as well as to comply with our legal obligations. This includes, among other things, personalising the user experience, communicating with you about our products and services, and preventing fraudulent activity."
+      },
+      "share": {
+        "title": "Sharing information",
+        "body": "We do not sell or share your personal information with unaffiliated third parties, except in limited situations where it is necessary to provide services or to comply with legal obligations. We ensure that any third party with access to your information meets appropriate privacy and security standards."
+      },
+      "security": {
+        "title": "Information security",
+        "body": "We implement technical and administrative security measures to protect your information against unauthorised access, disclosure, alteration and destruction."
+      },
+      "rights": {
+        "title": "Access to and control of your information",
+        "body": "You have the right to access, correct and delete your personal information. You may exercise these rights by contacting us through the channels provided at the end of this notice."
+      },
+      "changes": {
+        "title": "Changes to the privacy policy",
+        "body": "We reserve the right to modify this Privacy Policy at any time. Any change will take effect immediately after the updated version is published on our website. We recommend reviewing this Policy periodically to stay aware of any changes."
+      },
+      "contact": {
+        "title": "Contact",
+        "body": "If you have questions or concerns about this Privacy Policy, or if you wish to exercise your privacy rights, you may contact us by email:"
+      }
+    },
+    "contactEmail": "contacto.xtt@xtt.com.mx",
+    "acceptance": "By using our services, you accept the terms of this Privacy Policy.",
+    "governing": "This is a translation. The Spanish version is the one that governs."
   }
 }
