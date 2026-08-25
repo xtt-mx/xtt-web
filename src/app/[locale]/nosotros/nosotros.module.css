@@ -1,0 +1,104 @@
+/* Texto y cifra en proporción desigual: el párrafo manda, el año acompaña. */
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 64px;
+  padding-block: 64px;
+}
+
+.bodyText {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  max-width: 62ch;
+}
+
+.since {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding-inline-start: 40px;
+  border-inline-start: 1px solid var(--color-rule);
+  text-align: end;
+}
+
+.sinceYear {
+  font-size: clamp(3rem, 7vw, 5rem);
+  color: var(--color-accent-text);
+}
+
+.statements {
+  border-block: 1px solid var(--color-rule);
+}
+
+.statement {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 40px;
+  padding-block: 56px;
+}
+
+/* La segunda declaración invierte el orden de las columnas. Es el mismo bloque
+   con el eje espejado: da ritmo sin inventar un componente distinto. */
+.statementAlt {
+  grid-template-columns: minmax(0, 1fr) 200px;
+  border-top: 1px solid var(--color-rule);
+}
+
+.statementAlt .statementLabel {
+  order: 2;
+  justify-content: flex-end;
+}
+
+.statementAlt .statementText {
+  order: 1;
+  text-align: end;
+}
+
+.statementLabel {
+  align-self: start;
+  padding-top: 8px;
+}
+
+.statementText {
+  font-size: clamp(1.5rem, 2.9vw, 2.5rem);
+  line-height: 1.15;
+  text-transform: none;
+  letter-spacing: -0.005em;
+}
+
+@media (max-width: 880px) {
+  .body {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding-block: 44px;
+  }
+
+  .since {
+    align-items: flex-start;
+    padding-inline: 0 0;
+    padding-block-start: 24px;
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--color-rule);
+    text-align: start;
+  }
+
+  /* En una sola columna el espejo no aporta nada y solo desalinea la lectura. */
+  .statement,
+  .statementAlt {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding-block: 40px;
+  }
+
+  .statementAlt .statementLabel {
+    order: 0;
+    justify-content: flex-start;
+  }
+
+  .statementAlt .statementText {
+    order: 0;
+    text-align: start;
+  }
+}

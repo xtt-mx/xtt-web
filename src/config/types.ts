@@ -34,8 +34,6 @@ export interface Solution {
   readonly id: SolutionId;
   /** Slug en la URL, por locale. */
   readonly slug: Readonly<Record<Locale, string>>;
-  /** Nombre del ícono de lucide-react. */
-  readonly icon: string;
 }
 
 export interface Region {
