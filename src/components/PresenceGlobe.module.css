@@ -1,0 +1,33 @@
+/* El marco decide el tamaño; el componente solo lo mide. Así el CSS sigue
+   mandando en el layout y JavaScript no calcula posiciones. */
+.frame {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  /* Sin esto el canvas hereda el `line-height` del body y deja una franja
+     debajo que descuadra el centrado vertical del bloque. */
+  display: block;
+}
+
+/* --- Móvil ----------------------------------------------------------------
+   Bajo este ancho el globo se retira: la lista de regiones ya cuenta el
+   territorio completo, y un canvas WebGL girando en un teléfono gasta batería
+   por una decoración.
+
+   `display: none` además evita el trabajo, no solo la vista: el observador de
+   intersección nunca reporta visible un elemento sin caja, así que el globo ni
+   siquiera llega a crearse.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  .frame {
+    display: none;
+  }
+}

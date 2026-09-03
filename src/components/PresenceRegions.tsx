@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { PresenceGlobe } from '@/components/PresenceGlobe';
 import { regions } from '@/config/presence';
 import { cn } from '@/lib/cn';
 
@@ -19,11 +20,20 @@ export const PresenceRegions = async () => {
   return (
     <section className={styles.presence} aria-labelledby="presence-title">
       <div className={cn('container', styles.inner)}>
-        <p className={cn('eyebrow', 'section-label')}>{t('eyebrow')}</p>
-        <h2 className={cn('display', styles.title)} id="presence-title">
-          {t('title')}
-        </h2>
-        <p className={cn('muted', styles.lead)}>{t('lead')}</p>
+        {/* El globo acompaña al encabezado, no a la lista. La lista es el
+            contenido —cuatro regiones y sus países— y ocupa el ancho completo
+            debajo; si el canvas se pusiera a su lado le robaría la jerarquía. */}
+        <div className={styles.head}>
+          <div className={styles.intro}>
+            <p className={cn('eyebrow', 'section-label')}>{t('eyebrow')}</p>
+            <h2 className={cn('display', styles.title)} id="presence-title">
+              {t('title')}
+            </h2>
+            <p className={cn('muted', styles.lead)}>{t('lead')}</p>
+          </div>
+
+          <PresenceGlobe />
+        </div>
 
         <ul className={styles.regions}>
           {regions.map((region) => (

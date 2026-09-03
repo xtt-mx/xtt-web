@@ -7,6 +7,19 @@
   padding-block: 72px 88px;
 }
 
+/* Asimétrico como el resto del sitio: el texto pesa más que el globo, no son
+   dos mitades iguales. El globo acompaña; la lista de abajo es el contenido. */
+.head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.62fr);
+  align-items: center;
+  gap: 56px;
+}
+
+.intro {
+  min-width: 0;
+}
+
 .title {
   margin: 12px 0 0;
   font-size: clamp(2rem, 5vw, 3rem);
@@ -64,6 +77,13 @@
 @media (max-width: 880px) {
   .inner {
     padding-block: 52px 64px;
+  }
+
+  /* El globo pasa debajo del texto antes de retirarse del todo en móvil, para
+     que en tablet no quede espachurrado contra el titular. */
+  .head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
   }
 
   .regions {

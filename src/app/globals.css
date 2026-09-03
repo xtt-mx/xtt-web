@@ -55,6 +55,15 @@
   --dur-base: 220ms;
   --dur-slow: 420ms;
 
+  /* Globo de cobertura (WebGL). Necesita sus propios tokens porque los puntos
+     del mapa se dibujan MÁS CLAROS que la esfera en los dos temas: sobre una
+     superficie clara se pierden, así que la base tiene que ser gris medio en
+     claro y muy oscura en oscuro. Ningún token existente sirve para las dos.
+     El halo iguala al fondo de la sección para que el globo no flote sobre un
+     disco de otro color. */
+  --globe-base: #4a4a4a;
+  --globe-glow: #f5f5f5;
+
   /* Deja que scrollbars, inputs nativos y autofill sigan el tema. */
   color-scheme: light dark;
 }
@@ -92,6 +101,9 @@
     --color-danger-text: #ff8a8a;
     --color-danger-dim: #f0525218;
 
+    --globe-base: #1f1f1f;
+    --globe-glow: #141414;
+
     color-scheme: dark;
   }
 }
@@ -114,6 +126,9 @@
   --color-danger: #f05252;
   --color-danger-text: #ff8a8a;
   --color-danger-dim: #f0525218;
+
+  --globe-base: #1f1f1f;
+  --globe-glow: #141414;
 
   color-scheme: dark;
 }
