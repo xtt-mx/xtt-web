@@ -24,6 +24,20 @@
     "es": "Español",
     "en": "English"
   },
+  "chat": {
+    "open": "Abrir el chat",
+    "close": "Cerrar el chat",
+    "title": "Pregúntale a XTT",
+    "greeting": "Hola. Respondo dudas sobre las soluciones que distribuimos, dónde operamos y cómo trabajamos con canales. ¿Qué necesitas saber?",
+    "placeholder": "Escribe tu pregunta",
+    "send": "Enviar pregunta",
+    "sending": "Escribiendo…",
+    "contactCta": "Hablar con el equipo",
+    "disclaimer": "Respuestas generadas con IA a partir de este sitio.",
+    "error": "No pude responder ahora mismo. Inténtalo de nuevo en un momento.",
+    "rateLimited": "Demasiados mensajes seguidos. Espera un momento antes de continuar.",
+    "unavailable": "El chat no está disponible en este momento."
+  },
   "hero": {
     "eyebrow": "Mayorista de tecnología",
     "title": "Cuatro soluciones. Una sola red de canales.",
@@ -35,7 +49,7 @@
   "about": {
     "eyebrow": "Quiénes somos",
     "title": "Somos un mayorista, no un revendedor más.",
-    "lead": "Empresa 100% mexicana fundada en 2018. Distribuimos tecnología de comunicaciones e inteligencia artificial as a service, y trabajamos exclusivamente a través de canales: nuestro negocio es que a ellos les vaya bien.",
+    "lead": "Empresa 100% mexicana fundada en 2018. Distribuimos tecnología de comunicaciones e inteligencia artificial como servicio, y trabajamos exclusivamente a través de canales: nuestro negocio es que a ellos les vaya bien.",
     "body": "No competimos con nuestros socios por la cuenta final. Aportamos el catálogo, la capacitación, el preventa técnico y el soporte que un canal necesita para vender e implementar sin cargar con la infraestructura ni con la relación directa con cada fabricante.",
     "missionTitle": "Misión",
     "mission": "Ser el mayorista que hace crecer a sus canales: acercarles tecnología confiable de contact center y telecomunicaciones, y acompañarlos en la venta, la implementación y el soporte.",
@@ -178,6 +192,10 @@
       "share": {
         "title": "Compartir información",
         "body": "No vendemos ni compartimos su información personal con terceros no afiliados, excepto en situaciones limitadas donde sea necesario para la prestación de servicios o para cumplir con obligaciones legales. Nos aseguramos de que cualquier tercero que tenga acceso a su información cumpla con estándares de privacidad y seguridad adecuados."
+      },
+      "chat": {
+        "title": "Asistente de chat",
+        "body": "Este sitio ofrece un asistente que responde preguntas sobre nuestros servicios. Las conversaciones se procesan mediante un proveedor de inteligencia artificial y se conservan por un máximo de 90 días, con el único fin de mejorar el contenido del sitio y la calidad de las respuestas. No solicitamos datos personales a través del chat: si desea compartirlos, lo dirigimos a nuestro formulario de contacto. Le recomendamos no escribir información sensible en el chat."
       },
       "security": {
         "title": "Seguridad de la información",

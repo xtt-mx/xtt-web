@@ -55,6 +55,12 @@
   --dur-base: 220ms;
   --dur-slow: 420ms;
 
+  /* Elevación. El único elemento que flota sobre la página es el panel del chat;
+     mientras siga siendo así, un token basta y no hace falta una escala.
+     Va aquí y no en `@theme` porque no es un rol de color y no queremos que
+     Tailwind genere una utilidad `shadow-panel` que nadie va a escribir. */
+  --shadow-panel: 0 10px 30px rgb(0 0 0 / 0.13), 0 2px 6px rgb(0 0 0 / 0.06);
+
   /* Deja que scrollbars, inputs nativos y autofill sigan el tema. */
   color-scheme: light dark;
 }
@@ -92,6 +98,11 @@
     --color-danger-text: #ff8a8a;
     --color-danger-dim: #f0525218;
 
+    /* Una sombra negra sobre #0B0B0B no se ve. Se sube la opacidad para que al
+       menos separe del borde del viewport, pero quien hace el trabajo real de
+       delimitar el panel en oscuro es su borde `--color-rule`. */
+    --shadow-panel: 0 10px 34px rgb(0 0 0 / 0.6);
+
     color-scheme: dark;
   }
 }
@@ -114,6 +125,8 @@
   --color-danger: #f05252;
   --color-danger-text: #ff8a8a;
   --color-danger-dim: #f0525218;
+
+  --shadow-panel: 0 10px 34px rgb(0 0 0 / 0.6);
 
   color-scheme: dark;
 }

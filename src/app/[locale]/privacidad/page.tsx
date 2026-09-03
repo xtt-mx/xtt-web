@@ -2,6 +2,7 @@ import { getLocale, getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 
 import { PageHeader } from '@/components/PageHeader';
+import { isChatEnabled } from '@/config/chat';
 import { buildPageMetadata } from '@/lib/metadata';
 
 import styles from './privacidad.module.css';
@@ -26,6 +27,33 @@ const SECTIONS = [
   'changes',
   'contact',
 ] as const;
+
+/**
+ * Las mismas secciones más la del chat, que se intercala tras "Compartir
+ * información" porque es donde el texto ya habla de terceros.
+ *
+ * Se escribe entera y no como un `splice` sobre la anterior por la misma razón
+ * que la lista de arriba es explícita: el orden es parte del texto legal y debe
+ * poder leerse de un vistazo, no deducirse de aritmética de índices.
+ */
+const SECTIONS_WITH_CHAT = [
+  'collect',
+  'use',
+  'share',
+  'chat',
+  'security',
+  'rights',
+  'changes',
+  'contact',
+] as const;
+
+/**
+ * El aviso describe el chat solo mientras el chat exista. Van detrás de la misma
+ * bandera para que no pueda quedar publicada una de las dos mitades: ni un chat
+ * que recoge conversaciones sin declararlo, ni un aviso que describe algo que el
+ * visitante no tiene delante.
+ */
+const sections: readonly string[] = isChatEnabled ? SECTIONS_WITH_CHAT : SECTIONS;
 
 export const generateMetadata = async ({
   params,
@@ -59,7 +87,7 @@ const PrivacyPage = async ({ params }: { params: Promise<LocaleParams> }) => {
 
           <p className={styles.intro}>{t('intro')}</p>
 
-          {SECTIONS.map((section) => (
+          {sections.map((section) => (
             <section key={section} className={styles.section}>
               <h2 className={styles.heading}>{t(`sections.${section}.title`)}</h2>
               <p className={styles.body}>{t(`sections.${section}.body`)}</p>

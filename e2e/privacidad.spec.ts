@@ -9,7 +9,16 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('Aviso de privacidad', () => {
-  test('conserva las siete secciones del original, en orden', async ({ page }) => {
+  /**
+   * Las siete del original más la del chat, que se intercala tras "Compartir
+   * información" cuando el asistente está montado —la suite lo corre encendido,
+   * ver `playwright.config.ts`—. Es la mitad legal de la función: el chat guarda
+   * conversaciones, así que el aviso tiene que declararlo, y las dos mitades
+   * cuelgan de la misma bandera para que no pueda publicarse solo una.
+   */
+  test('conserva las secciones del original, en orden, con la del chat', async ({
+    page,
+  }) => {
     await page.goto('/privacidad');
 
     // El orden de un texto legal es parte del texto.
@@ -17,11 +26,21 @@ test.describe('Aviso de privacidad', () => {
       'Información que recopilamos',
       'Uso de la información',
       'Compartir información',
+      'Asistente de chat',
       'Seguridad de la información',
       'Acceso y control de su información',
       'Cambios en la política de privacidad',
       'Contacto',
     ]);
+  });
+
+  test('la sección del chat dice qué se guarda y por cuánto tiempo', async ({ page }) => {
+    await page.goto('/privacidad');
+
+    // Los dos datos que un aviso de este tipo no puede omitir: que interviene un
+    // tercero y cuánto dura la retención.
+    const section = page.getByRole('main').getByText(/inteligencia artificial/);
+    await expect(section).toContainText('90 días');
   });
 
   test('la URL del WordPress anterior sigue llegando al aviso', async ({ page }) => {

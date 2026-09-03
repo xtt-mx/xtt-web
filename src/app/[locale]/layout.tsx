@@ -3,9 +3,11 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import type { Metadata, Viewport } from 'next';
 
+import { ChatWidget } from '@/components/ChatWidget';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { brand, siteUrl } from '@/config/brand';
+import { isChatEnabled } from '@/config/chat';
 import { fontVariables } from '@/app/fonts';
 import { routing } from '@/i18n/routing';
 import { themeInitScript } from '@/lib/theme';
@@ -105,6 +107,16 @@ const LocaleLayout = async ({
           <Header />
           <main id="contenido">{children}</main>
           <Footer />
+
+          {/*
+            Fuera de `<main>` a propósito: el skip link salta a `#contenido` y no
+            debe aterrizar en el chat.
+
+            Apagado mientras el aviso de privacidad no mencione el chat —es copy
+            que aprueba el cliente—, así que esto se puede mergear y desplegar
+            sin publicar nada.
+          */}
+          {isChatEnabled && <ChatWidget />}
         </NextIntlClientProvider>
       </body>
     </html>

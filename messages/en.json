@@ -24,6 +24,20 @@
     "es": "Español",
     "en": "English"
   },
+  "chat": {
+    "open": "Open the chat",
+    "close": "Close the chat",
+    "title": "Ask XTT",
+    "greeting": "Hi. I answer questions about the solutions we distribute, where we operate and how we work with channel partners. What would you like to know?",
+    "placeholder": "Type your question",
+    "send": "Send question",
+    "sending": "Typing…",
+    "contactCta": "Talk to the team",
+    "disclaimer": "AI-generated answers based on this site.",
+    "error": "I could not answer right now. Please try again in a moment.",
+    "rateLimited": "Too many messages in a row. Please wait a moment before continuing.",
+    "unavailable": "The chat is unavailable right now."
+  },
   "hero": {
     "eyebrow": "Technology distributor",
     "title": "Four solutions. One partner network.",
@@ -178,6 +192,10 @@
       "share": {
         "title": "Sharing information",
         "body": "We do not sell or share your personal information with unaffiliated third parties, except in limited situations where it is necessary to provide services or to comply with legal obligations. We ensure that any third party with access to your information meets appropriate privacy and security standards."
+      },
+      "chat": {
+        "title": "Chat assistant",
+        "body": "This site offers an assistant that answers questions about our services. Conversations are processed through an artificial intelligence provider and are retained for a maximum of 90 days, for the sole purpose of improving the content of the site and the quality of its answers. We do not request personal data through the chat: if you wish to share it, we direct you to our contact form. We recommend that you do not enter sensitive information in the chat."
       },
       "security": {
         "title": "Information security",
