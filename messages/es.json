@@ -39,23 +39,23 @@
     "unavailable": "El chat no está disponible en este momento."
   },
   "hero": {
-    "eyebrow": "Mayorista de tecnología",
-    "title": "Cuatro soluciones. Una sola red de canales.",
-    "subtitle": "Llevamos tecnología de contact center y telecomunicaciones a los canales que atienden México, Centroamérica, el Caribe y Colombia.",
-    "ctaPrimary": "Ver nuestras soluciones",
+    "eyebrow": "Mayorista de CCaaS & IA",
+    "title": "Arquitectura en soluciones Cloud enfocadas al CX",
+    "subtitle": "Llevamos tecnología de contact center e IA a través de nuestra red de partners en Latinoamérica.",
+    "ctaPrimary": "Explora nuestras soluciones",
     "ctaSecondary": "Hablar con el equipo",
-    "orbitLabel": "Soluciones que distribuye XTT"
+    "orbitLabel": "Portafolio de soluciones XTT"
   },
   "about": {
     "eyebrow": "Quiénes somos",
-    "title": "Somos un mayorista, no un revendedor más.",
+    "title": "Más que un mayorista: somos tu aliado en la arquitectura de CX.",
     "lead": "Empresa 100% mexicana fundada en 2018. Distribuimos tecnología de comunicaciones e inteligencia artificial como servicio, y trabajamos exclusivamente a través de canales: nuestro negocio es que a ellos les vaya bien.",
     "body": "No competimos con nuestros socios por la cuenta final. Aportamos el catálogo, la capacitación, el preventa técnico y el soporte que un canal necesita para vender e implementar sin cargar con la infraestructura ni con la relación directa con cada fabricante.",
     "missionTitle": "Misión",
     "mission": "Ser el mayorista que hace crecer a sus canales: acercarles tecnología confiable de contact center y telecomunicaciones, y acompañarlos en la venta, la implementación y el soporte.",
     "visionTitle": "Visión",
     "vision": "Construir el ecosistema de distribución más sólido de la región: canales capacitados, fabricantes de primer nivel y clientes que evolucionan sin fricción.",
-    "foundedLabel": "En operación desde"
+    "foundedLabel": "Est:"
   },
   "solutions": {
     "eyebrow": "Nuestras soluciones",

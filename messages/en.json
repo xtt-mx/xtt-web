@@ -39,23 +39,23 @@
     "unavailable": "The chat is unavailable right now."
   },
   "hero": {
-    "eyebrow": "Technology distributor",
-    "title": "Four solutions. One partner network.",
-    "subtitle": "We bring contact center and telecom technology to the partners serving Mexico, Central America, the Caribbean and Colombia.",
-    "ctaPrimary": "See our solutions",
+    "eyebrow": "CCaaS & AI Wholesaler",
+    "title": "Cloud Solutions Architecture focused on CX.",
+    "subtitle": "We bring contact center and telecom technology through our partner ecosystem across LATAM.",
+    "ctaPrimary": "Explore our solutions",
     "ctaSecondary": "Talk to the team",
-    "orbitLabel": "Solutions distributed by XTT"
+    "orbitLabel": "XTT solution Portfolio."
   },
   "about": {
     "eyebrow": "Who we are",
-    "title": "We are a distributor, not another reseller.",
+    "title": "More than a wholesaler: we're your CX architecture partner.",
     "lead": "A 100% Mexican company founded in 2018. We distribute communications and AI-as-a-service technology, and we work exclusively through partners: our business is making theirs work.",
     "body": "We never compete with our partners for the end account. We provide the catalog, the training, the technical presales and the support a partner needs to sell and deploy — without carrying the infrastructure or managing a direct relationship with every vendor.",
     "missionTitle": "Mission",
     "mission": "To be the distributor that grows its partners: bringing them dependable contact center and telecom technology, and standing with them through the sale, the deployment and the support.",
     "visionTitle": "Vision",
     "vision": "To build the strongest distribution ecosystem in the region: trained partners, first-tier vendors, and customers who evolve without friction.",
-    "foundedLabel": "Operating since"
+    "foundedLabel": "Est:"
   },
   "solutions": {
     "eyebrow": "Our solutions",

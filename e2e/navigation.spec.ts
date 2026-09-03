@@ -1,4 +1,29 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+import en from '../messages/en.json';
+import es from '../messages/es.json';
+
+/**
+ * Pulsa un botón del switcher de idioma y espera la navegación.
+ *
+ * El clic va dentro de `toPass` por la misma razón que en `chat.spec.ts`:
+ * `page.goto` resuelve con el `load` del documento, y para entonces el botón ya
+ * está en el HTML del servidor pero React puede no haberle enganchado todavía el
+ * handler. Playwright lo ve accionable, dispara el clic, y el clic se pierde sin
+ * hacer nada. Allí se comprobó que ocurre de verdad; aquí es la misma forma de
+ * interacción, así que lleva la misma guarda.
+ *
+ * La comprobación de la URL lo hace idempotente: si el clic sí funcionó, no se
+ * vuelve a pulsar y no se acaba rebotando entre los dos idiomas.
+ */
+const cambiarIdioma = async (page: Page, boton: string, destino: RegExp) => {
+  await expect(async () => {
+    if (!destino.test(page.url())) {
+      await page.getByRole('button', { name: boton }).click();
+    }
+    await expect(page).toHaveURL(destino, { timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
+};
 
 test.describe('Navegación e idioma', () => {
   test('la raíz es español, sin importar el Accept-Language del navegador', async ({
@@ -11,7 +36,10 @@ test.describe('Navegación e idioma', () => {
 
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('lang', 'es');
-    await expect(page.locator('h1')).toContainText('Cuatro soluciones');
+    // Se compara contra la copy y no contra una frase escrita aquí: lo que este
+    // test comprueba es que la raíz sirve ESPAÑOL, no cuál es el titular. Con un
+    // literal, cada revisión de textos rompía un test que no habla de textos.
+    await expect(page.locator('h1')).toHaveText(es.hero.title);
 
     await context.close();
   });
@@ -41,10 +69,9 @@ test.describe('Navegación e idioma', () => {
 
     await page.goto('/');
 
-    await page.getByRole('button', { name: 'English' }).click();
-    await expect(page).toHaveURL(/\/en$/);
+    await cambiarIdioma(page, 'English', /\/en$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-    await expect(page.locator('h1')).toContainText('Four solutions');
+    await expect(page.locator('h1')).toHaveText(en.hero.title);
 
     // Acotado al nav: el mismo enlace existe en el footer y un locator suelto
     // resolvería a dos elementos.
@@ -58,8 +85,7 @@ test.describe('Navegación e idioma', () => {
   test('el switcher conserva la página actual al cambiar de idioma', async ({ page }) => {
     await page.goto('/en/about');
 
-    await page.getByRole('button', { name: 'Español' }).click();
-    await expect(page).toHaveURL(/\/nosotros$/);
+    await cambiarIdioma(page, 'Español', /\/nosotros$/);
   });
 
   test('el skip link es el primer foco y lleva al contenido', async ({ page }) => {
