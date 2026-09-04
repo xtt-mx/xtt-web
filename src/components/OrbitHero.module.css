@@ -1,21 +1,31 @@
 .hero {
   position: relative;
-  overflow: hidden;
+  /* `clip` y no `hidden`: recorta igual pero no genera un contexto de scroll ni
+     aplana nada. La niebla del escenario se desborda a propósito. */
+  overflow: clip;
   border-bottom: 1px solid var(--color-rule);
 }
 
 /* Asimétrico: la copy ocupa menos que el escenario, y el conjunto no está
-   centrado en la página. Dos mitades iguales es lo que hace toda plantilla. */
+   centrado en la página. Dos mitades iguales es lo que hace toda plantilla.
+
+   El escenario se llevó más peso que antes (0.78 contra 1) porque la órbita
+   estaba desaprovechando su columna: con el tope viejo se quedaba en 560 px
+   dentro de un hueco de ~710 y se leía pequeña en el centro de mucho aire. */
 .inner {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr);
   align-items: center;
-  gap: 64px;
-  min-height: min(84vh, 760px);
+  gap: 56px;
+  min-height: min(86vh, 820px);
   padding-block: 72px;
 }
 
+/* El escenario es un elemento posicionado y la copy no lo era: sin esto, la
+   niebla del hero se pintaría ENCIMA del titular. */
 .copy {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -51,58 +61,311 @@
   animation-delay: 240ms;
 }
 
-/* --- Escenario orbital ---------------------------------------------------- */
+/* ==========================================================================
+   ESCENARIO ORBITAL
+
+   Una sola propiedad registrada, `--spin`, gira aquí y la heredan todos los
+   descendientes. De ella salen por trigonometría la posición, la escala, la
+   opacidad y el apilado de cada nodo: UNA animación mueve las cuatro
+   soluciones, así que es imposible que se desincronicen.
+
+   `--spin: 0deg` está declarado a mano además de registrado en `globals.css`
+   porque un navegador sin `@property` no conoce el `initial-value`, y sin
+   declaración `var(--spin)` invalidaría todos los `calc()` de golpe. Con la
+   declaración, ese navegador deja cada nodo en su ángulo base: quieto, pero
+   bien compuesto.
+   ========================================================================== */
 
 .stage {
   position: relative;
+  /* Habilita `cqw` dentro del escenario. Es lo que permite que el radio del
+     nodo al centro se mida contra el ESCENARIO y no contra la etiqueta, que es
+     el único elemento cuyo tamaño conocen los descendientes del nodo. */
+  container-type: size;
   aspect-ratio: 1;
   width: 100%;
-  max-width: 560px;
+  max-width: min(100%, 760px);
   margin-inline: auto;
   display: grid;
   place-items: center;
+
+  /* Semiejes de la elipse, en porcentaje del escenario. Coinciden con el
+     `rx`/`ry` de la elipse principal del SVG (70 y 34 sobre un viewBox de 200):
+     si se cambian aquí, hay que cambiarlos allá o los nodos dejan de pisar la
+     línea.
+
+     La proporción 35/17 no es estética, es funcional. Con una elipse más
+     redonda el nodo del fondo pasa 176 px por encima del logo —medido— y nunca
+     lo toca: el apilado funciona pero no se ve nada, y toda la profundidad se
+     queda en la escala. Aplanándola, el nodo de atrás se mete DETRÁS del disco
+     y el de adelante le pasa POR ENCIMA, que es lo que hace que se lea como un
+     plano orbital inclinado y no como iconos pegados a un óvalo. */
+  --rx: 35;
+  --ry: 17;
+  --orbit-dur: 20s;
+  --spin: 0deg;
+
+  animation:
+    orbit-spin var(--orbit-dur) linear infinite,
+    reveal-fade 900ms var(--ease-out-expo) both;
 }
+
+@keyframes orbit-spin {
+  to {
+    --spin: 360deg;
+  }
+}
+
+/* Todo se congela mientras el puntero está encima. Es lo que hace que una
+   órbita de 20 s siga siendo legible: el movimiento se paga solo cuando nadie
+   está leyendo. */
+.stage:hover,
+.stage:hover *,
+.stage:focus-within,
+.stage:focus-within * {
+  animation-play-state: paused;
+}
+
+/* --- Capas 0-2: niebla, estrellas y trama -------------------------------- */
+
+.backdrop {
+  position: absolute;
+  inset: -16%;
+  z-index: 0;
+  pointer-events: none;
+  /* En una máscara solo cuenta el alfa, así que `currentColor` sirve de opaco y
+     evita escribir un color literal fuera de `globals.css`. */
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    currentColor 34%,
+    transparent 72%
+  );
+  mask-image: radial-gradient(circle at 50% 50%, currentColor 34%, transparent 72%);
+}
+
+/* El desenfoque es ESTÁTICO y lo que se anima es el `transform`. Repintar un
+   blur en cada frame es de lo más caro que hay; moverlo lo resuelve el
+   compositor. */
+.fog {
+  position: absolute;
+  left: 4%;
+  top: 2%;
+  width: 62%;
+  height: 62%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-accent-fog) 0%, transparent 70%);
+  filter: blur(26px);
+  animation: fog-drift 26s var(--ease-out-quart) infinite alternate;
+}
+
+.fogAlt {
+  left: auto;
+  top: auto;
+  right: 0;
+  bottom: 4%;
+  width: 54%;
+  height: 54%;
+  animation-duration: 37s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes fog-drift {
+  from {
+    transform: translate3d(-4%, 3%, 0) scale(0.9);
+  }
+  to {
+    transform: translate3d(7%, -6%, 0) scale(1.14);
+  }
+}
+
+/* Tres capas de motas a distinta velocidad: el paralaje es lo que convierte un
+   fondo con puntos en profundidad. Las posiciones están escritas a mano y no
+   sorteadas: un `Math.random()` en el servidor haría el build irreproducible. */
+.stars {
+  position: absolute;
+  inset: -20%;
+  background-repeat: repeat;
+  /* La deriva recorre exactamente un mosaico, así que el bucle no tiene
+     costura. */
+  animation: star-drift linear infinite;
+}
+
+@keyframes star-drift {
+  to {
+    transform: translate3d(calc(var(--tile) * -1), var(--tile), 0);
+  }
+}
+
+.starsFar {
+  --tile: 190px;
+  background-image:
+    radial-gradient(1px 1px at 11% 17%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 64% 9%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 33% 52%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 87% 41%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 52% 78%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 8% 88%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 74% 69%, var(--color-star), transparent);
+  background-size: var(--tile) var(--tile);
+  opacity: 0.5;
+  animation-duration: 150s;
+}
+
+.starsMid {
+  --tile: 132px;
+  background-image:
+    radial-gradient(1.4px 1.4px at 23% 31%, var(--color-star), transparent),
+    radial-gradient(1.4px 1.4px at 79% 14%, var(--color-star), transparent),
+    radial-gradient(1.4px 1.4px at 46% 63%, var(--color-star), transparent),
+    radial-gradient(1.4px 1.4px at 92% 82%, var(--color-star), transparent),
+    radial-gradient(1.4px 1.4px at 15% 71%, var(--color-star), transparent);
+  background-size: var(--tile) var(--tile);
+  opacity: 0.75;
+  animation-duration: 95s;
+}
+
+.starsNear {
+  --tile: 88px;
+  background-image:
+    radial-gradient(1.8px 1.8px at 37% 22%, var(--color-star), transparent),
+    radial-gradient(1.8px 1.8px at 81% 58%, var(--color-star), transparent),
+    radial-gradient(1.8px 1.8px at 19% 84%, var(--color-star), transparent);
+  background-size: var(--tile) var(--tile);
+  animation-duration: 62s;
+}
+
+/* Retícula muy tenue que se apaga hacia los bordes: le da sustancia al vacío
+   sin dibujar una línea que compita con las elipses. */
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    var(--color-rule-strong) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+  opacity: 0.4;
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    currentColor 18%,
+    transparent 60%
+  );
+  mask-image: radial-gradient(circle at 50% 50%, currentColor 18%, transparent 60%);
+}
+
+/* --- Capas 3-4: elipses y pulsos ----------------------------------------- */
 
 .rings {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  animation: reveal-fade 900ms var(--ease-out-expo) both;
+  animation-delay: 120ms;
 }
 
-/* 70% y no 100%: los nodos se apoyan en este anillo, y una etiqueta de 168 px
-   centrada sobre el borde del escenario dejaría la mitad fuera del recorte. */
-.ring {
-  position: absolute;
-  width: 70%;
-  height: 70%;
-  border: 1px dashed var(--color-rule-strong);
-  border-radius: 50%;
-  opacity: 0.7;
+/* Tres radios y dos inclinaciones distintas. Anillos concéntricos idénticos y
+   punteados son el gesto por defecto de todo hero "tecnológico"; un sistema de
+   elipses desalineadas se lee como un plano orbital. */
+.ringMain,
+.ringInner,
+.ringOuter {
+  stroke: var(--color-rule-strong);
+  stroke-width: 1;
+  /* La línea queda en 1 px real aunque el escenario mida 760 px. */
+  vector-effect: non-scaling-stroke;
+}
+
+.ringMain {
+  opacity: 0.95;
 }
 
 .ringInner {
-  width: 40%;
-  height: 40%;
-  border-style: solid;
-  border-color: var(--color-rule);
-  opacity: 1;
+  opacity: 0.55;
 }
 
-/* El logotipo ya trae su propio marco cuadrado (manual, pág. 5), así que el
-   círculo que había aquí antes solo duplicaba un contorno. Queda el disco de
-   fondo para separar la marca de las líneas de órbita que pasan por detrás. */
+.ringOuter {
+  opacity: 0.38;
+}
+
+/* El motivo propio del sitio: tráfico moviéndose por la red. `pathLength="100"`
+   normaliza el perímetro, así que el guion se expresa en porcentaje de vuelta y
+   no depende del tamaño de la elipse. */
+.pulse {
+  stroke: var(--color-accent-text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 9 91;
+  vector-effect: non-scaling-stroke;
+  animation: pulse-run 9s linear infinite;
+}
+
+.pulseHalo {
+  stroke-width: 8;
+  opacity: 0.16;
+}
+
+.pulseSlow {
+  stroke-dasharray: 5 95;
+  opacity: 0.65;
+  animation-duration: 14s;
+  animation-delay: -6s;
+}
+
+@keyframes pulse-run {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+/* --- Capa 5: el núcleo ---------------------------------------------------- */
+
+/* El logotipo ya trae su propio marco cuadrado (manual, pág. 5), así que aquí no
+   se le agrega ningún contorno: solo el disco opaco que lo separa de la elipse
+   —y de los nodos— que pasan por detrás. */
 .core {
   position: relative;
-  z-index: 2;
+  z-index: 5;
   display: grid;
   place-items: center;
-  width: 34%;
+  /* Tiene que ser lo bastante grande para que el nodo del fondo se esconda
+     detrás: con la elipse aplanada, el nodo de atrás pasa a ~17% del centro y
+     el disco llega al 16%. */
+  width: 32%;
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--color-bg);
-  --logo-size: clamp(56px, 13vw, 118px);
+  --logo-size: clamp(68px, 11vw, 150px);
+  animation: reveal-fade 700ms var(--ease-out-quart) both;
 }
+
+/* Va por detrás del disco opaco, así que solo se ve lo que lo desborda: un halo
+   alrededor de la marca, no una mancha encima. */
+.halo {
+  position: absolute;
+  z-index: -1;
+  inset: -38%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-accent-dim) 0%, transparent 66%);
+  animation: halo-breathe 7s var(--ease-out-quart) infinite alternate;
+}
+
+@keyframes halo-breathe {
+  from {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+/* --- Capas 6-7: los nodos ------------------------------------------------- */
 
 .orbit {
   position: absolute;
@@ -110,74 +373,119 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  z-index: 3;
+  /* Deliberadamente SIN `z-index`, `opacity`, `filter` ni `backdrop-filter`:
+     cualquiera de los cuatro crearía un contexto de apilado aquí y entonces
+     ningún nodo podría pasar por detrás del núcleo, que es el detalle del que
+     depende toda la sensación de profundidad. */
 }
 
-/*
-  Cada nodo se posiciona rotando el eje --angle y empujando el hijo hacia el
-  borde. La contra-rotación en .nodeInner mantiene el texto horizontal mientras
-  el eje gira: sin ella las etiquetas darían vueltas y serían ilegibles.
-
-  El reparto en la circunferencia lo hace SOLO --angle. Nada de escalonar con
-  animation-delay: la fase negativa se sumaría al ángulo inicial y los cuatro
-  nodos terminarían apilados de dos en dos. Todos giran en fase y conservan su
-  separación.
-*/
 .node {
+  --a: calc(var(--base) + var(--spin));
+  --nx: calc(cos(var(--a)) * var(--rx));
+  --ny: calc(sin(var(--a)) * var(--ry));
+  /* 0 detrás (arriba de la elipse), 1 delante (abajo). En una elipse vista en
+     escorzo, lo que está más abajo está más cerca. */
+  --depth: calc((sin(var(--a)) + 1) / 2);
+
   position: absolute;
-  /* inset 15% => caja al 70% del escenario => los nodos caen justo sobre .ring. */
-  inset: 15%;
+  /* La posición va en `left`/`top` y NO dentro de `translate`: un porcentaje
+     dentro de `translate` se resuelve contra el propio elemento, así que los
+     cuatro nodos acababan amontonados en el centro. */
+  left: calc(50% + var(--nx) * 1%);
+  top: calc(50% + var(--ny) * 1%);
   display: grid;
   place-items: center;
-  transform: rotate(var(--angle));
-  animation: orbit-spin 48s linear infinite;
+
+  /* Las cuatro señales de profundidad, todas función del mismo ángulo. */
+  z-index: calc(1 + var(--depth) * 8);
+  transform: translate(-50%, -50%) scale(calc(0.82 + var(--depth) * 0.26));
+  opacity: calc(0.48 + var(--depth) * 0.52);
+  filter: blur(calc((1 - var(--depth)) * 1.4px));
+
+  /* SIN `transition`, a propósito.
+     Estas tres propiedades cambian en cada frame porque dependen de `--spin`,
+     así que una transición encima no tiene nada que suavizar: solo puede meter
+     retraso reapuntando su destino cada 16 ms.
+
+     Y hubo una vez en que sí hizo daño: con la transición puesta se midieron
+     nodos girando con la opacidad y el desenfoque clavados en un valor viejo
+     mientras el `z-index` —que no transiciona— sí seguía al ángulo. Quitarla lo
+     arregló. No conseguí reproducirlo después sobre un build de producción, así
+     que pudo ser un artefacto del hot reload; queda como aviso, no como
+     diagnóstico. `e2e/hero.spec.ts` vigila el síntoma de todas formas. */
 }
 
-.nodeInner {
+/* Al señalar un nodo se adelanta, recupera contraste pleno y dibuja su radio al
+   centro, aunque estuviera en la mitad de atrás. Es `:hover` puro: el hero
+   sigue sin una línea de JavaScript. */
+.node:hover,
+.node:focus-within {
+  z-index: 10;
+  opacity: 1;
+  filter: none;
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* El radio exacto hasta el centro. Sobre una elipse la distancia NO es
+   constante, así que se calcula: `hypot` da el largo y `atan2` la dirección.
+   `cqw` mide contra el escenario; un porcentaje aquí se resolvería contra la
+   etiqueta, que es quien contiene al radio. */
+.spoke {
   position: absolute;
-  top: 0;
+  left: 50%;
+  top: 50%;
+  width: calc(hypot(var(--nx), var(--ny)) * 1cqw);
+  height: 1px;
+  transform-origin: 0 50%;
+  transform: rotate(calc(atan2(var(--ny), var(--nx)) + 180deg));
+  background: linear-gradient(to right, var(--color-accent-text), transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out-quart);
+}
+
+.node:hover .spoke,
+.node:focus-within .spoke {
+  opacity: 0.5;
+}
+
+/* Sin caja ni borde: la etiqueta se apoya en el fondo y deja que las elipses
+   hagan la estructura. Las cajitas con puntito la volvían un tablero de chips.
+
+   La entrada va aquí y no en `.node` a propósito: `reveal-fade` termina en
+   `opacity: 1; transform: none`, y con `both` se quedaría pegada pisando la
+   escala y el desplazamiento que dan la profundidad. */
+.nodeInner {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  /* Cabe el nombre completo de la solución en dos líneas en vez de recortarlo:
-     "SBCs y análisis de data telecom" en una sola línea desborda el escenario. */
-  max-width: 168px;
-  padding: 8px 14px;
-  transform: translateY(-50%) rotate(calc(var(--angle) * -1));
-  background: var(--color-bg);
-  border: 1px solid var(--color-rule-strong);
+  gap: 9px;
+  /* Cabe el nombre completo en dos líneas en vez de recortarlo: "SBCs y análisis
+     de data telecom" en una sola línea desborda el escenario. */
+  max-width: 176px;
+  padding: 7px 12px;
   border-radius: var(--radius-sm);
-  animation: orbit-counter-spin 48s linear infinite;
+  background: color-mix(in srgb, var(--color-bg) 78%, transparent);
+  backdrop-filter: blur(6px);
+  animation: reveal-fade 700ms var(--ease-out-expo) both;
+  animation-delay: calc(300ms + var(--i) * 90ms);
 }
 
-.nodeDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-accent);
+.nodeIcon {
+  display: grid;
+  place-items: center;
   flex: none;
+  color: var(--color-accent-text);
+  transition: color var(--dur-fast) var(--ease-out-quart);
 }
 
 .nodeLabel {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.35;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--color-fg);
-}
-
-@keyframes orbit-spin {
-  to {
-    transform: rotate(calc(var(--angle) + 360deg));
-  }
-}
-
-@keyframes orbit-counter-spin {
-  to {
-    transform: translateY(-50%) rotate(calc((var(--angle) + 360deg) * -1));
-  }
 }
 
 /* --- Móvil: la órbita se convierte en lista ------------------------------- */
@@ -191,18 +499,26 @@
   }
 
   .stage {
+    /* Sin esto, `container-type: size` colapsaría la altura a cero: la
+       contención de tamaño ignora el contenido, y aquí ya no queda
+       `aspect-ratio` que la determine. */
+    container-type: normal;
     aspect-ratio: auto;
     max-width: none;
     display: block;
+    animation: none;
   }
 
+  /* El decorado entero se desmonta: en un teléfono no aporta nada y se ahorra
+     todo su costo de pintado. */
+  .backdrop,
   .rings {
     display: none;
   }
 
-  /* El logo NO se esconde en móvil: el brief pide la marca al centro con las
-     soluciones alrededor, y aunque la órbita se aplane a lista, la marca sigue
-     encabezándola. Solo pierde el disco de fondo, que sin anillos no separa nada. */
+  /* El logo NO se esconde: el brief pide la marca al centro con las soluciones
+     alrededor, y aunque la órbita se aplane a lista, la marca sigue
+     encabezándola. Solo pierde el disco y el halo, que sin elipse no separan. */
   .core {
     width: auto;
     aspect-ratio: auto;
@@ -211,47 +527,47 @@
     --logo-size: 84px;
   }
 
+  .halo {
+    display: none;
+  }
+
   .orbit {
     position: static;
     border-top: 1px solid var(--color-rule);
   }
 
+  /* Se desmonta todo lo que la órbita necesitaba: posición, profundidad y
+     apilado. Aquí son cuatro filas iguales y ninguna está "más cerca". */
   .node {
     position: static;
     display: block;
+    z-index: auto;
     transform: none;
-    animation: none;
+    opacity: 1;
+    filter: none;
     border-bottom: 1px solid var(--color-rule);
   }
 
+  .node:hover,
+  .node:focus-within {
+    transform: none;
+  }
+
+  .spoke {
+    display: none;
+  }
+
   .nodeInner {
-    position: static;
     display: flex;
     width: 100%;
-    /* Se libera el tope que la órbita necesita: aquí la etiqueta ocupa la fila. */
     max-width: none;
     padding: 18px 2px;
-    transform: none;
-    animation: none;
-    border: 0;
     border-radius: 0;
     background: transparent;
+    backdrop-filter: none;
   }
 
   .nodeLabel {
     font-size: 0.875rem;
-  }
-}
-
-/* La regla global de prefers-reduced-motion ya neutraliza las animaciones; aquí
-   solo se recentra la composición para que el estado congelado se vea armado y
-   no como una órbita detenida a la mitad. */
-@media (prefers-reduced-motion: reduce) {
-  .node {
-    transform: rotate(var(--angle));
-  }
-
-  .nodeInner {
-    transform: translateY(-50%) rotate(calc(var(--angle) * -1));
   }
 }

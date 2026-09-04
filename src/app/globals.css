@@ -27,6 +27,12 @@
   --color-accent-text: #0a2dff;
   --color-accent-contrast: #ffffff;
   --color-accent-dim: #0a2dff14;
+  /* Niebla y estrellas del escenario orbital del hero. Son capas de fondo, no
+     tipografía: nunca llevan texto encima, así que no les aplica la regla de
+     contraste del acento. En claro la mota es azul y no gris, para que la
+     textura pertenezca a la rampa de marca en vez de leerse como suciedad. */
+  --color-accent-fog: #0a2dff33;
+  --color-star: #0a2dff40;
 
   /* Error. Mismo criterio que el acento: un token para borde y otro para texto,
      porque el rojo que se ve bien como línea no siempre pasa contraste como
@@ -92,6 +98,10 @@
     --color-accent-text: #6a85ff;
     --color-accent-contrast: #ffffff;
     --color-accent-dim: #0a2dff1a;
+    /* Sobre negro el azul se apaga: la niebla necesita casi el doble de alfa
+       que en claro para que se note, y las estrellas pasan a blanco. */
+    --color-accent-fog: #0a2dff40;
+    --color-star: #ffffff33;
 
     /* El rojo del tema claro sobre negro queda muy oscuro; este da 8.7:1. */
     --color-danger: #f05252;
@@ -121,6 +131,8 @@
   --color-accent-text: #6a85ff;
   --color-accent-contrast: #ffffff;
   --color-accent-dim: #0a2dff1a;
+  --color-accent-fog: #0a2dff40;
+  --color-star: #ffffff33;
 
   --color-danger: #f05252;
   --color-danger-text: #ff8a8a;
@@ -337,6 +349,25 @@ select {
    MOTION
    Reveal escalonado por --i, sin librería.
    ========================================================================== */
+
+/* Ángulo de la órbita del hero.
+
+   Va aquí y no en el CSS Module porque `@property` registra un nombre GLOBAL:
+   declararlo desde un módulo daría la falsa impresión de que está encapsulado.
+
+   Registrarlo no es opcional. Una custom property sin tipo no se interpola —el
+   navegador salta de un valor al otro a mitad de la animación— así que sin este
+   bloque la órbita no gira, da un tirón. Y como el valor inicial es 0deg, un
+   navegador que no soporte `@property` deja cada nodo en su ángulo base: la
+   composición se ve quieta, pero bien armada. Esa es la degradación buscada.
+
+   `inherits: true` es lo que permite que UNA sola animación, puesta en el
+   escenario, mueva las cuatro soluciones a la vez. */
+@property --spin {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
 
 @keyframes reveal-fade {
   from {
