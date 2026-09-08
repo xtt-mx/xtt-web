@@ -89,7 +89,7 @@
   "presence": {
     "eyebrow": "Presencia",
     "title": "Dónde operamos",
-    "lead": "Contamos con presencia en México, Centroamérica, el Caribe y Colombia.",
+    "lead": "Tenemos presencia en México, Centroamérica, el Caribe y Colombia, conectando mercados, tecnología y nuevas oportunidades de negocio.",
     "regions": {
       "mexico": "México",
       "centroamerica": "Centroamérica",
@@ -110,8 +110,7 @@
       "CO": "Colombia",
       "DO": "República Dominicana",
       "PR": "Puerto Rico",
-      "JM": "Jamaica",
-      "TT": "Trinidad y Tobago"
+      "JM": "Jamaica"
     }
   },
   "partnerLocator": {

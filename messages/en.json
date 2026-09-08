@@ -89,7 +89,7 @@
   "presence": {
     "eyebrow": "Presence",
     "title": "Where we operate",
-    "lead": "We have presence across Mexico, Central America, the Caribbean and Colombia.",
+    "lead": "We have a presence across Mexico, Central America, the Caribbean and Colombia, connecting markets, technology and new business opportunities.",
     "regions": {
       "mexico": "Mexico",
       "centroamerica": "Central America",
@@ -110,8 +110,7 @@
       "CO": "Colombia",
       "DO": "Dominican Republic",
       "PR": "Puerto Rico",
-      "JM": "Jamaica",
-      "TT": "Trinidad and Tobago"
+      "JM": "Jamaica"
     }
   },
   "partnerLocator": {

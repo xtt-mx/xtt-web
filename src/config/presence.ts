@@ -10,7 +10,7 @@ import type { CountryCode, Region, RegionId } from './types';
 export const regions: readonly Region[] = [
   { id: 'mexico', countries: ['MX'] },
   { id: 'centroamerica', countries: ['GT', 'BZ', 'SV', 'HN', 'NI', 'CR', 'PA'] },
-  { id: 'caribe', countries: ['DO', 'PR', 'JM', 'TT'] },
+  { id: 'caribe', countries: ['DO', 'PR', 'JM'] },
   { id: 'colombia', countries: ['CO'] },
 ] as const;
 

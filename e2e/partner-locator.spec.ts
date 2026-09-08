@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 import es from '../messages/es.json';
+import { coveredCountries } from '../src/config/presence';
+import { solutions } from '../src/config/solutions';
 
 /**
  * El aviso del estado vacío se lee de `messages/es.json` y no se escribe aquí a
@@ -38,10 +40,19 @@ test.describe('Partner Locator', () => {
   }) => {
     await page.goto('/partner-locator');
 
-    // 13 países cubiertos + "Todos". Si el filtro se alimentara de `partners`
-    // —hoy vacío— quedaría con una sola opción y sería inútil.
-    await expect(page.getByLabel('País').locator('option')).toHaveCount(14);
-    await expect(page.getByLabel('Solución').locator('option')).toHaveCount(5);
+    // Todos los países cubiertos + "Todos". El número sale de la configuración y
+    // no escrito a mano: dar de alta o de baja un país es una decisión comercial
+    // que no tiene por qué romper un test sobre los filtros. Ya pasó con la baja
+    // de Trinidad y Tobago.
+    //
+    // Lo que de verdad se prueba es que el filtro se alimenta de la COBERTURA y
+    // no de `partners` —hoy vacío—, que lo dejaría con una sola opción.
+    await expect(page.getByLabel('País').locator('option')).toHaveCount(
+      coveredCountries.length + 1,
+    );
+    await expect(page.getByLabel('Solución').locator('option')).toHaveCount(
+      solutions.length + 1,
+    );
   });
 
   test('filtrar no rompe la página ni miente sobre el resultado', async ({ page }) => {
@@ -66,8 +77,8 @@ test.describe('Partner Locator', () => {
     // los `<option>` del filtro, y un locator sobre `main` mide las dos cosas.
     const presence = page.getByRole('region', { name: 'Dónde operamos' });
 
-    await expect(presence.getByText('Guatemala')).toBeVisible();
-    await expect(presence.getByText('Trinidad y Tobago')).toBeVisible();
+    await expect(presence.getByText(es.presence.countries.GT)).toBeVisible();
+    await expect(presence.getByText(es.presence.countries.DO)).toBeVisible();
 
     // "México" aparece una vez, como región; repetirlo como país no informa nada.
     await expect(presence.getByText('México', { exact: true })).toHaveCount(1);
