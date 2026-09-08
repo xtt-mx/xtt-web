@@ -1,5 +1,15 @@
 import { expect, test } from '@playwright/test';
 
+import es from '../messages/es.json';
+
+/**
+ * El aviso del estado vacío se lee de `messages/es.json` y no se escribe aquí a
+ * mano. Con el literal, cada ronda de revisión de copy en ClickUp rompía un test
+ * que no habla de copy —pasó con «Todavía» → «Aún»— y la reacción natural es
+ * revertir el texto en vez de arreglar el test. Es el mismo criterio que ya
+ * sigue `navigation.spec.ts` con el titular del hero.
+ */
+
 /**
  * El directorio de partners está vacío a propósito hasta que Sergio entregue el
  * listado real (ver `src/config/partners.ts`). Estas pruebas fijan el
@@ -14,14 +24,13 @@ test.describe('Partner Locator', () => {
     await page.goto('/partner-locator');
     const main = page.getByRole('main');
 
-    await expect(main.getByText('Todavía no publicamos el directorio')).toBeVisible();
+    await expect(main.getByText(es.partnerLocator.empty)).toBeVisible();
 
     // La salida importa tanto como el aviso: sin ella el visitante que sí quiere
     // un partner se queda sin siguiente paso.
-    await expect(main.getByRole('link', { name: 'Contactar a XTT' })).toHaveAttribute(
-      'href',
-      '/contacto',
-    );
+    await expect(
+      main.getByRole('link', { name: es.partnerLocator.emptyCta }),
+    ).toHaveAttribute('href', '/contacto');
   });
 
   test('los filtros ofrecen toda la cobertura, no solo los países con partner', async ({
@@ -45,7 +54,7 @@ test.describe('Partner Locator', () => {
     // Con el directorio vacío cualquier combinación da cero, y el contador debe
     // decirlo en vez de quedarse con el número anterior.
     await expect(main.getByText('Sin partners')).toBeVisible();
-    await expect(main.getByText('Todavía no publicamos el directorio')).toBeVisible();
+    await expect(main.getByText(es.partnerLocator.empty)).toBeVisible();
   });
 
   test('la cobertura no repite el país cuando la región es ese país', async ({
