@@ -70,9 +70,15 @@ test.describe('Órbita del hero', () => {
  * profundidad. Por eso el test no se conforma con que los nodos se muevan.
  */
 test.describe('Órbita del hero: movimiento', () => {
+  /**
+   * El umbral tiene que seguir al media query de `OrbitHero.module.css`. Si se
+   * quedan desalineados y algún proyecto de Playwright cae en medio, estos tests
+   * corren contra la LISTA —donde no hay nada que gire— y fallan diciendo que la
+   * órbita está rota cuando lo que pasa es que no existe a ese ancho.
+   */
   test.skip(
-    ({ viewport }) => (viewport?.width ?? 0) < 901,
-    'bajo 900 px la órbita se sustituye por una lista y no hay nada que girar',
+    ({ viewport }) => (viewport?.width ?? 0) <= 1100,
+    'bajo 1100 px la órbita se sustituye por una lista y no hay nada que girar',
   );
 
   test('los nodos giran y la profundidad cambia con ellos', async ({ page }) => {

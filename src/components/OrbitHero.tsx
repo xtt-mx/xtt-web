@@ -12,9 +12,9 @@ import styles from './OrbitHero.module.css';
  * Hero: el wordmark XTT al centro con las cuatro soluciones orbitando.
  *
  * Server component: ni estado ni interacción en JavaScript. Todo el movimiento
- * —el giro, la profundidad, la niebla, las estrellas, los pulsos y la pausa al
- * pasar el cursor— es CSS. Meter JS aquí costaría hidratación en el elemento que
- * define el LCP a cambio de nada.
+ * —el giro, la profundidad, la niebla, las estrellas y los pulsos— es CSS. Meter
+ * JS aquí costaría hidratación en el elemento que define el LCP a cambio de
+ * nada.
  *
  * En viewports angostos la órbita NO se encoge: se sustituye por una lista con
  * hairlines (ver el media query del CSS). Una órbita de 320 px deja las
@@ -77,61 +77,54 @@ export const OrbitHero = async () => {
             <span className={styles.grid} />
           </div>
 
-          {/* Las elipses van en UN solo SVG y no en tres divs con border-radius:
-              `non-scaling-stroke` mantiene la línea en 1 px real a cualquier
-              tamaño del escenario, y `pathLength` normaliza el perímetro a 100
-              para que el pulso se exprese en porcentaje de vuelta. */}
+          {/* DOS elipses, sin inclinar y concéntricas. Antes eran tres con dos
+              inclinaciones distintas (−8°, 0°, +6°) buscando huir del cliché de
+              los anillos concéntricos; en pantalla no leían como un plano
+              orbital sino como tres óvalos mal alineados cruzándose en sitios
+              arbitrarios. El cliché que hay que evitar es el anillo PUNTEADO, no
+              el concéntrico. La tercera, además, vivía detrás del núcleo.
+
+              `rx`/`ry` de la principal tienen que seguir a `--rx`/`--ry` del CSS
+              (32 % y 19 % de 200), o los nodos dejan de pisar la línea. */}
           <svg
             className={styles.rings}
             viewBox="0 0 200 200"
             aria-hidden="true"
             focusable="false"
           >
-            <ellipse
-              className={styles.ringOuter}
-              cx="100"
-              cy="100"
-              rx="90"
-              ry="41"
-              transform="rotate(-8 100 100)"
-            />
-            <ellipse
-              className={styles.ringInner}
-              cx="100"
-              cy="100"
-              rx="48"
-              ry="22"
-              transform="rotate(6 100 100)"
-            />
-            <ellipse className={styles.ringMain} cx="100" cy="100" rx="70" ry="34" />
+            <ellipse className={styles.ringOuter} cx="100" cy="100" rx="88" ry="52" />
+            <ellipse className={styles.ringMain} cx="100" cy="100" rx="64" ry="38" />
 
-            {/* Tráfico moviéndose por la red: dos arcos de luz persiguiéndose por
-                la órbita principal a distinta velocidad. El halo es una copia de
-                trazo ancho y transparente, no un `<filter>`: un filtro SVG
-                animándose cada frame es de lo más caro que se puede pedir. */}
+            {/* Tráfico moviéndose por la red: dos destellos persiguiéndose por la
+                órbita a distinta velocidad, cada uno con su copia ancha y
+                transparente detrás a modo de halo. El halo es una copia y no un
+                `<filter>` porque un filtro SVG animándose cada frame es de lo
+                más caro que se puede pedir.
+
+                Ya NO llevan `pathLength`: el largo del guion se expresa en
+                unidades del viewBox contra el perímetro real. Ver el comentario
+                de `.pulse` en el CSS. */}
             <ellipse
               className={cn(styles.pulse, styles.pulseHalo)}
               cx="100"
               cy="100"
-              rx="70"
-              ry="34"
-              pathLength="100"
+              rx="64"
+              ry="38"
             />
+            <ellipse className={styles.pulse} cx="100" cy="100" rx="64" ry="38" />
             <ellipse
-              className={styles.pulse}
+              className={cn(styles.pulse, styles.pulseHalo, styles.pulseSlow)}
               cx="100"
               cy="100"
-              rx="70"
-              ry="34"
-              pathLength="100"
+              rx="64"
+              ry="38"
             />
             <ellipse
               className={cn(styles.pulse, styles.pulseSlow)}
               cx="100"
               cy="100"
-              rx="70"
-              ry="34"
-              pathLength="100"
+              rx="64"
+              ry="38"
             />
           </svg>
 
