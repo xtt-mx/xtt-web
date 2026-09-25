@@ -1,0 +1,26 @@
+# =====================================================================
+# Override para el entorno de PREVISUALIZACIÓN.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.preview.yml up -d --build
+#
+# Lo único que cambia respecto a producción es qué Caddyfile se monta.
+# El servicio `web` es idéntico: se previsualiza la misma imagen que se
+# publica, no una variante — si el entorno de pruebas no es el mismo
+# binario, no prueba nada.
+#
+# Pensado para el hostname gratis que Hostinger da con cada VPS
+# (`srvXXXXXX.hstgr.cloud`): resuelve solo, así que Caddy saca su
+# certificado de Let's Encrypt sin tocar el DNS de xtt.com.mx y sin
+# comprar ningún dominio.
+# =====================================================================
+
+services:
+  caddy:
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
+      PREVIEW_USER: ${PREVIEW_USER}
+      PREVIEW_PASSWORD_HASH: ${PREVIEW_PASSWORD_HASH}
+    volumes:
+      - ./Caddyfile.preview:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config

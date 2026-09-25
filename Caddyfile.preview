@@ -1,0 +1,43 @@
+# =====================================================================
+# Caddy para el entorno de PREVISUALIZACIÓN.
+#
+# Se usa con el override de compose, nunca solo:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.preview.yml up -d --build
+#
+# Va en un archivo aparte y no como un bloque comentado dentro del
+# `Caddyfile` normal a propósito. Un «acuérdate de descomentar esto antes
+# de desplegar» se olvida, y olvidarlo aquí significa que el sitio de
+# pruebas —con textos sin aprobar y con las OPCIÓN 2 todavía sin
+# resolver— se indexa en Google y compite con xtt.com.mx. Con dos
+# archivos, el entorno lo decide el comando que escribes.
+# =====================================================================
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+
+	# La barrera de verdad. `robots.txt` es una petición y las páginas de
+	# este sitio salen como `index, follow`; un 401 no lo discute nadie.
+	#
+	# El hash se genera así (NO se escribe la contraseña en claro aquí):
+	#   docker run --rm caddy:2-alpine caddy hash-password --plaintext 'la-que-sea'
+	# y el resultado va en PREVIEW_PASSWORD_HASH del .env.
+	#
+	# En Caddy anterior a 2.8 la directiva se llamaba `basicauth`.
+	basic_auth {
+		{$PREVIEW_USER} {$PREVIEW_PASSWORD_HASH}
+	}
+
+	# Cinturón además de tirantes: si algún día se quita la contraseña para
+	# enseñárselo a alguien, esto sigue diciéndole a los buscadores que no.
+	header X-Robots-Tag "noindex, nofollow, noarchive"
+
+	header X-Content-Type-Options "nosniff"
+	header Referrer-Policy "strict-origin-when-cross-origin"
+
+	# SIN HSTS, y no es un olvido. El hostname de previsualización es un
+	# subdominio de `hstgr.cloud`, que es de Hostinger y no nuestro: fijar
+	# ahí una política de un año afecta a un dominio ajeno y no hay forma
+	# de retirarla desde aquí. En producción sí va, en el `Caddyfile`.
+}
