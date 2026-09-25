@@ -126,27 +126,81 @@
   }
 }
 
-/* NO hay pausa al pasar el cursor, a propósito: el cliente la quitó.
+/* NO hay pausa al pasar el CURSOR, a propósito: el cliente la quitó.
    La contrapartida es que las etiquetas nunca se detienen, y por eso la vuelta
    pasó de 20 s a 35 s —la mitad de velocidad de desplazamiento— y por eso el
    estado de reposo de un nodo tiene que ser legible por sí solo. De ahí que
-   también se fuera el desenfoque y que subiera la opacidad mínima. */
+   también se fuera el desenfoque y que subiera la opacidad mínima.
+
+   Con el TECLADO es distinto y aquí sí se para. Las placas son enlaces: si la
+   órbita sigue girando mientras alguien tabula, el anillo de foco se pasea solo
+   por la pantalla y quien navega así pierde el sitio. Con el ratón se apunta y
+   se corrige sobre la marcha; con el teclado no hay a dónde apuntar. No es la
+   misma interacción y no merece la misma regla. */
+.stage:focus-within,
+.stage:focus-within * {
+  animation-play-state: paused;
+}
 
 /* --- Capas 0-2: niebla, estrellas y trama -------------------------------- */
 
+/* SIN máscara aquí, y es lo que más rendimiento devolvió de todo: **9 fps**,
+   de 51 a 60.
+
+   Llevaba una máscara radial en este contenedor para desvanecer el fondo hacia
+   los bordes. El problema es que una máscara agrupa: en cuanto CUALQUIER cosa
+   de dentro se anima —la niebla, el titileo de una capa de estrellas— el
+   navegador tiene que rerasterizar el grupo entero, y el grupo son varias capas
+   de más de mil píxeles de lado. Medido capa por capa parecía que el coste
+   estaba repartido entre la niebla, las estrellas y el titileo; en realidad era
+   siempre el mismo: la máscara de aquí.
+
+   El desvanecido no se perdió, se movió a donde no agrupa nada: la niebla ya se
+   apaga por su propio degradado, y `.stars` y `.grid` llevan cada una la suya.
+   Se ve igual y sale gratis. */
 .backdrop {
   position: absolute;
   inset: -16%;
   z-index: 0;
   pointer-events: none;
-  /* En una máscara solo cuenta el alfa, así que `currentColor` sirve de opaco y
-     evita escribir un color literal fuera de `globals.css`. */
-  -webkit-mask-image: radial-gradient(
-    circle at 50% 50%,
-    currentColor 34%,
-    transparent 72%
-  );
-  mask-image: radial-gradient(circle at 50% 50%, currentColor 34%, transparent 72%);
+}
+
+/* Grano.
+   ---------------------------------------------------------------------------
+   El azul de la niebla sobre `#0b0b0b` recorre muy pocos valores a lo largo de
+   cientos de píxeles, y en una pantalla de 8 bits eso se ve: aparecen los
+   escalones del degradado en anillos concéntricos. El ruido los rompe porque
+   desordena el redondeo, y de paso le da al escenario textura de imagen en vez
+   de acabado de render.
+
+   Va sobre TODA LA SECCIÓN, y las dos veces que lo puse más abajo se vio por
+   qué no. Dentro de `.backdrop` dejaba la bruma del núcleo —que se pinta
+   encima— como un disco liso recortado contra un campo granulado: volvía a
+   aparecer justo el canto que tanto costó quitar. Y acotado al escenario
+   dibujaba un rectángulo, porque un grano claro sobre negro levanta los negros
+   y el borde del elemento se hacía visible como una línea recta en mitad del
+   hero. El grano, como en una película, es de la imagen entera o no es de
+   nada.
+
+   SIN `mix-blend-mode`, y esto no es una preferencia: medido, mezclar esta capa
+   con `soft-light` costaba **26 fps**. Un blend obliga a recomponer todo el
+   contexto de apilado en cada frame, y aquí debajo hay una órbita girando. Con
+   opacidad plana el grano modula menos y levanta un pelo los negros, pero
+   dithera el degradado —que es para lo que está— y sale gratis.
+
+   `feColorMatrix` lo dessatura: `feTurbulence` genera ruido en color y a esta
+   opacidad se vería como motas de colores sobre el azul.
+
+   `pointer-events: none` para no robarle el clic a las placas, que ahora son
+   enlaces. El data URI evita pagar una petición por 300 bytes. */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* Un ANILLO de luz alrededor de la marca, no una mancha encima.
@@ -162,27 +216,45 @@
    contra un resplandor que la rodea, y el velo deja de tener contra qué
    recortarse.
 
-   El desenfoque es ESTÁTICO y lo que se anima es el `transform`. Repintar un
-   blur en cada frame es de lo más caro que hay; moverlo lo resuelve el
-   compositor. Por eso el centrado va en `margin` y no en `translate`: ahí se
-   pelearía con la animación. */
+   SIN `filter: blur()`, y aquí hubo que aprender a base de medir. Llevaba
+   `blur(26px)` con la teoría de que un desenfoque estático se rasteriza una vez
+   y luego el compositor solo mueve la capa. En la práctica costaba **8 fps**:
+   el elemento mide casi 900 px, se anima, y el navegador acaba rehaciendo el
+   desenfoque. Y era redundante — un degradado radial ya es suave por
+   definición. Se quitó el blur, se abrieron las paradas para recuperar la
+   suavidad que aportaba, y el grano se ocupa del bandeo.
+
+   El centrado va en `margin` y no en `translate` porque ahí se pelearía con la
+   animación de deriva. */
 .fog {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 92%;
-  height: 92%;
-  margin-left: -46%;
-  margin-top: -46%;
+  width: 78%;
+  height: 78%;
+  margin-left: -39%;
+  margin-top: -39%;
   border-radius: 50%;
+  /* `closest-side` NO es un detalle: es la causa de todos los cantos que se
+     fueron persiguiendo uno a uno.
+
+     Un `radial-gradient(circle, …)` mide su 100 % hasta la ESQUINA de la caja
+     por defecto. Pero la caja está recortada a un círculo por `border-radius`,
+     y el radio es la esquina dividida por √2. O sea que en el borde visible el
+     degradado solo había recorrido el 71 % de su recorrido y todavía tenía
+     color: el recorte lo cortaba en seco. De ahí los discos con filo, tanto
+     aquí como en la bruma del núcleo.
+
+     Con `closest-side` el 100 % cae exactamente donde recorta el
+     `border-radius`, así que el degradado se apaga justo en su propio borde y
+     no hay nada que cortar. */
   background: radial-gradient(
-    circle,
-    transparent 16%,
-    var(--color-accent-fog) 42%,
-    transparent 74%
+    circle closest-side,
+    transparent 12%,
+    var(--color-accent-fog) 50%,
+    transparent 100%
   );
-  filter: blur(26px);
-  animation: fog-drift 26s var(--ease-out-quart) infinite alternate;
+  animation: fog-drift 26s var(--ease-in-out-sine) infinite alternate;
 }
 
 /* Esta sí va descentrada: es la que rompe la simetría y evita que el fondo
@@ -190,11 +262,18 @@
 .fogAlt {
   left: auto;
   top: auto;
-  right: 2%;
-  bottom: 6%;
-  width: 52%;
-  height: 52%;
+  right: 4%;
+  bottom: 8%;
+  width: 46%;
+  height: 46%;
   margin: 0;
+  /* Esta no es un anillo sino una mancha: va descentrada y su trabajo es romper
+     la simetría, no rodear nada. */
+  background: radial-gradient(
+    circle closest-side,
+    var(--color-accent-fog) 0%,
+    transparent 100%
+  );
   animation-duration: 37s;
   animation-direction: alternate-reverse;
 }
@@ -208,22 +287,34 @@
   }
 }
 
-/* Tres capas de motas a distinta velocidad: el paralaje es lo que convierte un
-   fondo con puntos en profundidad. Las posiciones están escritas a mano y no
-   sorteadas: un `Math.random()` en el servidor haría el build irreproducible. */
+/* Tres capas de motas a distinto tamaño y brillo. Las posiciones están escritas
+   a mano y no sorteadas: un `Math.random()` en el servidor haría el build
+   irreproducible.
+
+   LAS CAPAS NO SE MUEVEN, y la razón es dura pero clara. Llevaban una deriva de
+   paralaje, cada una a su velocidad. Medido: esa deriva costaba **26 fps** —de
+   60 a 34— porque son tres capas de más de mil píxeles de lado que el navegador
+   recompone en cada frame. Y a 1,3 px por segundo, que es lo que avanzaban,
+   nadie la percibe. Se estaba pagando un tercio del presupuesto de animación
+   por un efecto que no se ve.
+
+   La profundidad la siguen dando el tamaño, la densidad y la opacidad de cada
+   capa, que no cuestan nada. El único movimiento que queda en el fondo es el
+   titileo de `.starsMid`, que solo toca `opacity` y no repinta. */
 .stars {
   position: absolute;
   inset: -20%;
   background-repeat: repeat;
-  /* La deriva recorre exactamente un mosaico, así que el bucle no tiene
-     costura. */
-  animation: star-drift linear infinite;
-}
-
-@keyframes star-drift {
-  to {
-    transform: translate3d(calc(var(--tile) * -1), var(--tile), 0);
-  }
+  /* El desvanecido que antes hacía la máscara de `.backdrop`. Aquí no agrupa a
+     nadie: cada capa se enmascara sola, y la que titila lo hace sobre su propia
+     capa ya rasterizada. En una máscara solo cuenta el alfa, así que
+     `currentColor` sirve de opaco y evita escribir un color literal. */
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    currentColor 30%,
+    transparent 66%
+  );
+  mask-image: radial-gradient(circle at 50% 50%, currentColor 30%, transparent 66%);
 }
 
 .starsFar {
@@ -238,7 +329,6 @@
     radial-gradient(1px 1px at 74% 69%, var(--color-star), transparent);
   background-size: var(--tile) var(--tile);
   opacity: 0.5;
-  animation-duration: 150s;
 }
 
 .starsMid {
@@ -250,8 +340,19 @@
     radial-gradient(1.4px 1.4px at 92% 82%, var(--color-star), transparent),
     radial-gradient(1.4px 1.4px at 15% 71%, var(--color-star), transparent);
   background-size: var(--tile) var(--tile);
-  opacity: 0.75;
-  animation-duration: 95s;
+  /* Solo titila esta de las tres: si parpadean todas a la vez el fondo se pone
+     nervioso y deja de ser fondo. Es `opacity`, que el compositor resuelve sin
+     repintar — por eso esta sí se puede permitir. */
+  animation: star-twinkle 7.5s var(--ease-in-out-sine) infinite alternate;
+}
+
+@keyframes star-twinkle {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0.9;
+  }
 }
 
 .starsNear {
@@ -261,7 +362,6 @@
     radial-gradient(1.8px 1.8px at 81% 58%, var(--color-star), transparent),
     radial-gradient(1.8px 1.8px at 19% 84%, var(--color-star), transparent);
   background-size: var(--tile) var(--tile);
-  animation-duration: 62s;
 }
 
 /* Retícula muy tenue que se apaga hacia los bordes: le da sustancia al vacío
@@ -299,10 +399,14 @@
 }
 
 /* Dos elipses concéntricas y sin inclinar: la principal, donde viajan los
-   nodos, y una exterior muy tenue que da caja. */
+   nodos, y una exterior muy tenue que da caja.
+
+   El trazo NO es un gris plano: es el degradado vertical del `<defs>`, que apaga
+   la línea arriba —la mitad que se va al fondo— y la deja plena abajo. Es lo que
+   hace que el óvalo se lea como un plano inclinado, y sale gratis en objetos. */
 .ringMain,
 .ringOuter {
-  stroke: var(--color-rule-strong);
+  stroke: url('#xtt-orbit-fade');
   stroke-width: 1;
   /* La línea queda en 1 px real aunque el escenario mida 760 px. */
   vector-effect: non-scaling-stroke;
@@ -316,10 +420,30 @@
   opacity: 0.4;
 }
 
+/* Las paradas del degradado. Van por clase y no por atributo para no escribir
+   un color: el token sigue siendo la única fuente. */
+.ringFadeFar,
+.ringFadeMid,
+.ringFadeNear {
+  stop-color: var(--color-rule-strong);
+}
+
+.ringFadeFar {
+  stop-opacity: 0.32;
+}
+
+.ringFadeMid {
+  stop-opacity: 0.78;
+}
+
+.ringFadeNear {
+  stop-opacity: 1;
+}
+
 /* El motivo propio del sitio: tráfico moviéndose por la red.
    ---------------------------------------------------------------------------
    El guion va en UNIDADES DEL viewBox contra el perímetro real de la elipse
-   (≈310 con rx 64 / ry 32), y NO en porcentaje vía `pathLength`.
+   (326 con rx 64 / ry 38, medido), y NO en porcentaje vía `pathLength`.
 
    Se hacía con `pathLength="100"` y `stroke-dasharray: 9 91`, dando por hecho
    que el perímetro quedaba normalizado a 100. No quedaba: el patrón se repetía
@@ -330,27 +454,47 @@
    Por eso tampoco lleva `non-scaling-stroke`: ese sí resuelve el trazo en
    píxeles de pantalla, y mezclarlo con un guion en unidades de usuario es otra
    forma de acabar sin saber cuánto mide el destello. Aquí todo está en el mismo
-   sistema y el resultado es exactamente un destello del 8 % de la vuelta. */
+   sistema y el resultado es exactamente un destello del 7 % de la vuelta.
+
+   La duración TAMPOCO es un número libre: son cuatro vueltas por cada vuelta de
+   la órbita. De esa relación sale el momento exacto en que el cometa alcanza a
+   cada nodo, que es lo que gobierna su encendido. Ver `.nodeInner`. */
 .pulse {
   stroke: var(--color-accent-text);
   stroke-width: 0.7;
   stroke-linecap: round;
-  stroke-dasharray: 26 300;
-  animation: pulse-run 9s linear infinite;
+  /* 22 + 304 = 326 = el perímetro. Cualquier pareja que no sume eso vuelve a
+     repartir guiones por el anillo. */
+  stroke-dasharray: 22 304;
+  animation: pulse-run calc(var(--orbit-dur) / 4) linear infinite;
 }
 
-/* Copia ancha y casi transparente, en la misma fase: el resplandor del destello
+/* Copia ancha y casi transparente, en la misma fase: el resplandor de la cabeza
    sin pagar un filtro SVG. */
 .pulseHalo {
   stroke-width: 2.6;
   opacity: 0.2;
 }
 
-/* Solo cambia el tiempo. Ni el ancho ni la opacidad, para que combine con
-   `.pulseHalo` sin pelearse por quién gana. */
-.pulseSlow {
-  animation-duration: 15s;
-  animation-delay: -6s;
+/* La cola. Dos segmentos que van por DETRÁS de la cabeza y que son cada vez más
+   largos y más tenues, que es como se ve una estela: no se dispersa, se estira.
+
+   Ir por detrás se consigue con un retardo positivo, no con otro `dashoffset`:
+   un retardo de δ deja al segmento exactamente δ menos avanzado sobre el mismo
+   recorrido, así que la cola nunca se despega de la cabeza aunque se cambie la
+   duración. */
+.pulseTailNear {
+  stroke-width: 0.5;
+  stroke-dasharray: 34 292;
+  opacity: 0.45;
+  animation-delay: 0.35s;
+}
+
+.pulseTailFar {
+  stroke-width: 0.35;
+  stroke-dasharray: 52 274;
+  opacity: 0.2;
+  animation-delay: 0.9s;
 }
 
 @keyframes pulse-run {
@@ -411,7 +555,7 @@
   inset: -16%;
   border-radius: 50%;
   background: radial-gradient(
-    circle,
+    circle closest-side,
     var(--color-bg) 0%,
     var(--color-bg) 30%,
     transparent 100%
@@ -425,8 +569,12 @@
   position: absolute;
   inset: -30%;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--color-accent-dim) 0%, transparent 66%);
-  animation: halo-breathe 7s var(--ease-out-quart) infinite alternate;
+  background: radial-gradient(
+    circle closest-side,
+    var(--color-accent-dim) 0%,
+    transparent 100%
+  );
+  animation: halo-breathe 7s var(--ease-in-out-sine) infinite alternate;
 }
 
 @keyframes halo-breathe {
@@ -549,10 +697,11 @@
    nebulosa en oscuro, cuatro recortes blancos en claro— y se ve pegada encima.
    Un borde propio la convierte en una pieza.
 
-   La entrada va aquí y no en `.node` a propósito: `reveal-fade` termina en
-   `opacity: 1; transform: none`, y con `both` se quedaría pegada pisando la
-   escala y el desplazamiento que dan la profundidad. */
+   La entrada NO usa `reveal-fade`: ése termina en `transform: none`, y con
+   `both` se quedaría pegado pisando la flotación. Aquí la entrada solo toca la
+   opacidad y el `transform` queda libre para quien lo necesita. */
 .nodeInner {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -562,19 +711,135 @@
   min-height: 54px;
   padding: 8px 13px;
   border: 1px solid var(--color-rule);
+  /* Luz desde arriba: el canto superior un punto más definido que el resto es
+     lo que le da grosor a una caja que si no se lee como un recorte plano. */
+  border-top-color: var(--color-rule-strong);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-bg) 88%, transparent);
-  backdrop-filter: blur(8px);
-  animation: reveal-fade 700ms var(--ease-out-expo) both;
-  animation-delay: calc(300ms + var(--i) * 90ms);
+  /* SIN `backdrop-filter`. Llevaba `blur(8px)` y medido costaba **23 fps**: un
+     desenfoque de fondo sobre cuatro elementos que se mueven obliga a rehacer
+     el desenfoque de todo lo que tienen detrás en cada frame, y detrás hay una
+     órbita girando. Se compensa subiendo el relleno del 88 % al 93 %, que da la
+     misma separación del fondo por una centésima del coste. */
+  background: color-mix(in srgb, var(--color-bg) 93%, transparent);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color var(--dur-base) var(--ease-out-quart),
+    background var(--dur-base) var(--ease-out-quart);
+
+  /*
+    Dos animaciones, y no se pisan: una toca `opacity` y la otra `transform`.
+
+    1. `node-in` — la entrada.
+
+    2. `node-float` — cada placa sube y baja con SU periodo y SU fase. Es lo que
+       rompe el bloque rígido: sin esto las cuatro se mueven como una sola pieza
+       y el conjunto se lee como un mecanismo. Los periodos (7 / 8,3 / 9,6 /
+       10,9 s) no son múltiplos entre sí a propósito, para que el patrón conjunto
+       tarde muchísimo en repetirse.
+
+    El encendido va aparte, en `::after`. Ver ahí por qué.
+  */
+  animation:
+    node-in 700ms var(--ease-out-expo) both,
+    node-float calc(7s + var(--i) * 1.3s) var(--ease-in-out-sine) infinite alternate;
+  animation-delay: calc(300ms + var(--i) * 90ms), calc(var(--i) * -1.7s);
 }
 
+/*
+  EL ENCENDIDO. La placa se aviva justo cuando el cometa pasa por encima de ella,
+  y eso convierte el adorno en un circuito: se ve la señal llegar a un nodo,
+  encenderlo y seguir. Es el detalle que hace que el escenario parezca vivo en
+  vez de parecer cuatro cosas girando.
+
+  Va en una capa propia y no sobre el borde de la placa porque si no el destello
+  y el `:hover` se pelean por `border-color`, y las animaciones ganan a las
+  declaraciones normales: señalar una placa encendida no habría hecho nada.
+  Separados, cada uno manda en lo suyo.
+
+  --- La sincronía es una cuenta, no un ajuste ---
+
+  El cometa da 4 vueltas por cada vuelta de la órbita, así que gana 3 vueltas
+  netas por `--orbit-dur`: alcanza a cada nodo cada `--orbit-dur / 3`, y al nodo
+  de ángulo `base` lo alcanza por primera vez en `--orbit-dur · base / 3`, con
+  `base` en vueltas — que es justo lo que entrega `--base-turns`.
+
+  Se apoya en dos hechos MEDIDOS en el navegador, no supuestos: cometa y nodos
+  giran en el mismo sentido, y el trazado de la elipse arranca en el mismo 0°
+  que los ángulos de los nodos.
+
+  `--signal-lead` es el único número que se ajusta midiendo. Corrige dos cosas:
+  que la cabeza del guion va 22 unidades por delante del origen de su patrón, y
+  un residuo que NO se puede eliminar del todo — el cometa avanza a ARCO
+  constante y los nodos a ÁNGULO constante, y en una elipse de 64 × 38 eso no es
+  lo mismo: la velocidad angular del cometa varía en un factor de 1,7 a lo largo
+  de la vuelta. El desfase oscila unos ±0,3 s y este valor lo deja centrado.
+
+  Comprobado: en el instante del destello, el cometa está a 0 px del borde de su
+  placa en las cuatro. Si se toca `--orbit-dur`, la duración del cometa o el
+  `stroke-dasharray`, hay que volver a medirlo.
+*/
+.nodeInner::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--color-accent-text);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  --signal-lead: -0.8s;
+  animation: node-signal calc(var(--orbit-dur) / 3) linear infinite;
+  animation-delay: calc(var(--orbit-dur) * var(--base-turns) / 3 + var(--signal-lead));
+}
+
+@keyframes node-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes node-float {
+  from {
+    transform: translateY(-4px);
+  }
+  to {
+    transform: translateY(4px);
+  }
+}
+
+/* Entra de golpe y se apaga despacio, que es como llega una señal. El 4 % de
+   11,7 s son ~470 ms de caída. */
+@keyframes node-signal {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 45%, transparent);
+  }
+  4% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+}
+
+/* Al señalar o al llegar con el teclado. */
+.nodeInner:hover,
+.nodeInner:focus-visible {
+  border-color: var(--color-accent-text);
+  background: color-mix(in srgb, var(--color-bg) 96%, transparent);
+}
+
+/* El icono también se aleja. Los cuatro a la misma saturación aplanan el
+   conjunto: el del frente tiene que llegar pleno y el del fondo apagado, igual
+   que le pasa a su placa. `--depth` se hereda del nodo. */
 .nodeIcon {
   display: grid;
   place-items: center;
   flex: none;
   color: var(--color-accent-text);
-  transition: color var(--dur-fast) var(--ease-out-quart);
+  opacity: calc(0.5 + var(--depth) * 0.5);
 }
 
 .nodeLabel {
@@ -660,6 +925,9 @@
 
   /* La placa se deshace: aquí son cuatro filas de una lista, separadas por
      hairlines, y el ancho fijo que da ritmo en la órbita aquí solo estorbaría. */
+  /* La placa se deshace y con ella todo lo que la hacía vivir: sin cometa no
+     hay señal que la encienda, y una fila de lista que flota es solo una fila
+     que no se está quieta. */
   .nodeInner {
     display: flex;
     width: 100%;
@@ -669,6 +937,22 @@
     border-radius: 0;
     background: transparent;
     backdrop-filter: none;
+    animation: node-in 700ms var(--ease-out-expo) both;
+    animation-delay: calc(300ms + var(--i) * 90ms);
+  }
+
+  .nodeInner::after {
+    display: none;
+  }
+
+  .nodeInner:hover,
+  .nodeInner:focus-visible {
+    background: transparent;
+  }
+
+  /* Aquí el icono es una fila más, no un objeto lejano. */
+  .nodeIcon {
+    opacity: 1;
   }
 
   .nodeLabel {

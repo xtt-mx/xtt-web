@@ -57,6 +57,10 @@
 :root {
   --ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /* La única simétrica, y hace falta: un vaivén con `alternate` y una curva de
+     SALIDA sale disparado y se queda esperando en el extremo, que es lo
+     contrario de respirar. Para eso las dos puntas tienen que frenar igual. */
+  --ease-in-out-sine: cubic-bezier(0.37, 0, 0.63, 1);
   --dur-fast: 140ms;
   --dur-base: 220ms;
   --dur-slow: 420ms;
@@ -160,6 +164,11 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* El header es `sticky` y mide 69 px con su filete. Sin esto, cualquier
+     ancla deja su título justo debajo de la barra y parece que el enlace
+     apuntó mal. Va en `html` y no en cada destino para que valga también para
+     las anclas que se añadan después. */
+  scroll-padding-top: 92px;
 }
 
 body {

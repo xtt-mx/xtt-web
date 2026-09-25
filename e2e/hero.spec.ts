@@ -34,6 +34,39 @@ test.describe('Órbita del hero', () => {
     }
   });
 
+  /**
+   * Las cuatro placas son enlaces, no adorno. Y lo que de verdad se puede
+   * romper sin que nadie lo note es el otro extremo: que el ancla de destino
+   * desaparezca de la página de soluciones y los cuatro enlaces se queden
+   * apuntando al vacío. Por eso el test recorre el viaje entero.
+   */
+  test('cada solución lleva a su apartado en «Nuestras soluciones»', async ({ page }) => {
+    await page.goto('/');
+    const lista = page.getByRole('list', { name: es.hero.orbitLabel });
+
+    const destinos: Record<string, string> = {
+      [es.solutions.ccaas.name]: 'ccaas',
+      [es.solutions['sbc-telecom-data'].name]: 'sbc-telecom-data',
+      [es.solutions.messaging.name]: 'messaging',
+      [es.solutions.sip.name]: 'sip',
+    };
+
+    await expect(lista.getByRole('link')).toHaveCount(4);
+
+    for (const [nombre, id] of Object.entries(destinos)) {
+      await expect(lista.getByRole('link', { name: nombre })).toHaveAttribute(
+        'href',
+        `/soluciones#${id}`,
+      );
+    }
+
+    // El ancla existe de verdad al otro lado.
+    await page.goto('/soluciones');
+    for (const id of Object.values(destinos)) {
+      await expect(page.locator(`#${id}`)).toBeVisible();
+    }
+  });
+
   test('el decorado no entra en el árbol de accesibilidad', async ({ page }) => {
     await page.goto('/');
 
@@ -81,35 +114,61 @@ test.describe('Órbita del hero: movimiento', () => {
     'bajo 1100 px la órbita se sustituye por una lista y no hay nada que girar',
   );
 
+  /**
+   * El giro se ADELANTA a mano en vez de esperar al reloj.
+   *
+   * La primera versión tomaba cuatro muestras separadas por 900 ms reales. Pasa
+   * siempre en aislado y falla de vez en cuando en la suite completa, porque con
+   * ocho workers en una sola máquina el tiempo pasa pero las animaciones se
+   * quedan sin frames: se mide dos veces el mismo fotograma y el test dice que
+   * la órbita no se mueve. Un test que depende de que la máquina vaya holgada no
+   * prueba el código, prueba la máquina.
+   *
+   * Moviendo `currentTime` de la animación de la órbita se fija el ángulo exacto
+   * que se quiere observar. Determinista, instantáneo e inmune a la carga.
+   */
   test('los nodos giran y la profundidad cambia con ellos', async ({ page }) => {
     await page.goto('/');
 
-    const medir = () =>
-      page.evaluate((sel) => {
-        const nodos = [...document.querySelectorAll(`${sel} > li`)];
-        return nodos.map((nodo) => {
-          const caja = nodo.getBoundingClientRect();
-          const estilo = getComputedStyle(nodo);
-          return {
-            x: caja.x + caja.width / 2,
-            y: caja.y + caja.height / 2,
-            opacidad: Number(estilo.opacity),
-            apilado: Number(estilo.zIndex),
-          };
-        });
-      }, orbita);
+    const medirEn = (fraccionDeVuelta: number) =>
+      page.evaluate(
+        ([sel, fraccion]) => {
+          const escenario = document.querySelector(sel as string)?.parentElement;
+          const giro = escenario
+            ?.getAnimations()
+            .find((a) =>
+              ((a as CSSAnimation).animationName ?? '').includes('orbit-spin'),
+            );
+          if (!giro) throw new Error('no se encontró la animación de la órbita');
+
+          const duracion = Number(giro.effect?.getComputedTiming().duration ?? 0);
+          giro.pause();
+          giro.currentTime = duracion * (fraccion as number);
+
+          return [...document.querySelectorAll(`${sel as string} > li`)].map((nodo) => {
+            const caja = nodo.getBoundingClientRect();
+            const estilo = getComputedStyle(nodo);
+            return {
+              x: caja.x + caja.width / 2,
+              y: caja.y + caja.height / 2,
+              opacidad: Number(estilo.opacity),
+              apilado: Number(estilo.zIndex),
+            };
+          });
+        },
+        [orbita, fraccionDeVuelta] as const,
+      );
 
     /**
-     * Cuatro muestras y no dos. `sin()` es simétrico: entre dos instantes
-     * sueltos un nodo puede volver a la misma opacidad por casualidad, y un
-     * test que solo mira el principio y el final se puede tragar justo el fallo
-     * que busca. Con cuatro muestras a lo largo de más de un octavo de vuelta,
-     * que las cuatro coincidan es imposible.
+     * Cuatro ángulos y no dos. `sin()` es simétrico: entre dos instantes sueltos
+     * un nodo puede volver a la misma opacidad por casualidad, y un test que
+     * solo mira el principio y el final se puede tragar justo el fallo que
+     * busca. Con cuatro repartidos por un octavo de vuelta, que los cuatro
+     * coincidan es imposible.
      */
-    const muestras = [await medir()];
-    for (let i = 0; i < 3; i += 1) {
-      await page.waitForTimeout(900);
-      muestras.push(await medir());
+    const muestras = [];
+    for (const fraccion of [0, 0.03, 0.06, 0.09]) {
+      muestras.push(await medirEn(fraccion));
     }
 
     const primera = muestras[0];

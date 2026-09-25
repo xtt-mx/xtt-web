@@ -17,6 +17,10 @@ export const SolutionRow = async ({ solution, index }: SolutionRowProps) => {
 
   return (
     <li
+      /* Ancla del enlace que trae desde la órbita del hero. Es la clave estable
+         de la solución, la misma que ya usan las URLs y las claves de i18n, así
+         que el destino no se puede desincronizar del origen. */
+      id={solution.id}
       className={cn(styles.row, index % 2 === 1 && styles.rowAlt)}
       style={{ '--i': index } as React.CSSProperties}
     >

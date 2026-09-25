@@ -92,18 +92,50 @@ export const OrbitHero = async () => {
             aria-hidden="true"
             focusable="false"
           >
+            {/* El trazo se apaga donde la elipse se aleja. Una línea de gris
+                plano deja el óvalo plano; atenuarla arriba —que es la mitad que
+                se va al fondo— es lo que la convierte en un plano inclinado, y
+                no cuesta ni un objeto más en escena.
+
+                El id no lo toca CSS Modules, así que lleva prefijo a mano. */}
+            <defs>
+              <linearGradient id="xtt-orbit-fade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" className={styles.ringFadeFar} />
+                <stop offset="55%" className={styles.ringFadeMid} />
+                <stop offset="100%" className={styles.ringFadeNear} />
+              </linearGradient>
+            </defs>
+
             <ellipse className={styles.ringOuter} cx="100" cy="100" rx="88" ry="52" />
             <ellipse className={styles.ringMain} cx="100" cy="100" rx="64" ry="38" />
 
-            {/* Tráfico moviéndose por la red: dos destellos persiguiéndose por la
-                órbita a distinta velocidad, cada uno con su copia ancha y
-                transparente detrás a modo de halo. El halo es una copia y no un
-                `<filter>` porque un filtro SVG animándose cada frame es de lo
-                más caro que se puede pedir.
+            {/* Tráfico moviéndose por la red.
+                Un solo cometa, no dos: la cabeza brillante y corta, y detrás dos
+                segmentos cada vez más largos y más tenues que hacen de cola. Con
+                dos cometas la lectura se repartía y, sobre todo, solo uno puede
+                gobernar el encendido de los nodos — dos ritmos de destello sin
+                relación entre sí se leen como parpadeo, no como señal.
 
-                Ya NO llevan `pathLength`: el largo del guion se expresa en
-                unidades del viewBox contra el perímetro real. Ver el comentario
-                de `.pulse` en el CSS. */}
+                El halo es una copia ancha y transparente, no un `<filter>`: un
+                filtro SVG animándose cada frame es de lo más caro que se puede
+                pedir.
+
+                Ninguno lleva `pathLength`: el largo del guion va en unidades del
+                viewBox contra el perímetro real. Ver `.pulse` en el CSS. */}
+            <ellipse
+              className={cn(styles.pulse, styles.pulseTailFar)}
+              cx="100"
+              cy="100"
+              rx="64"
+              ry="38"
+            />
+            <ellipse
+              className={cn(styles.pulse, styles.pulseTailNear)}
+              cx="100"
+              cy="100"
+              rx="64"
+              ry="38"
+            />
             <ellipse
               className={cn(styles.pulse, styles.pulseHalo)}
               cx="100"
@@ -112,20 +144,6 @@ export const OrbitHero = async () => {
               ry="38"
             />
             <ellipse className={styles.pulse} cx="100" cy="100" rx="64" ry="38" />
-            <ellipse
-              className={cn(styles.pulse, styles.pulseHalo, styles.pulseSlow)}
-              cx="100"
-              cy="100"
-              rx="64"
-              ry="38"
-            />
-            <ellipse
-              className={cn(styles.pulse, styles.pulseSlow)}
-              cx="100"
-              cy="100"
-              rx="64"
-              ry="38"
-            />
           </svg>
 
           <div className={styles.core}>
@@ -136,6 +154,7 @@ export const OrbitHero = async () => {
           <ul className={styles.orbit} aria-label={t('orbitLabel')}>
             {solutions.map((solution, index) => {
               const Icon = SOLUTION_ICONS[solution.id];
+              const angle = baseAngle(index, solutions.length);
 
               return (
                 <li
@@ -143,20 +162,31 @@ export const OrbitHero = async () => {
                   className={styles.node}
                   style={
                     {
-                      '--base': `${baseAngle(index, solutions.length)}deg`,
+                      '--base': `${angle}deg`,
+                      /**
+                       * El mismo ángulo en VUELTAS y sin unidad. De aquí sale
+                       * el momento exacto en que el cometa alcanza a este nodo;
+                       * un `<angle>` no se puede dividir para obtener un tiempo,
+                       * y por eso va también como número. Ver `.nodeInner` en el
+                       * CSS, donde está la cuenta del batido.
+                       */
+                      '--base-turns': angle / 360,
                       '--i': index,
                     } as React.CSSProperties
                   }
                 >
                   <span className={styles.spoke} aria-hidden="true" />
-                  <span className={styles.nodeInner}>
+                  <Link
+                    href={{ pathname: '/soluciones', hash: solution.id }}
+                    className={styles.nodeInner}
+                  >
                     <span className={styles.nodeIcon} aria-hidden="true">
                       <Icon size={17} strokeWidth={1.75} />
                     </span>
                     <span className={styles.nodeLabel}>
                       {tSolutions(`${solution.id}.name`)}
                     </span>
-                  </span>
+                  </Link>
                 </li>
               );
             })}
