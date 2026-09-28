@@ -19,24 +19,40 @@ La infraestructura ya está escrita: `Dockerfile`, `docker-compose.yml` y
 | Acceso al DNS       | **No está en Hostinger.** Ver abajo                                         |
 | Secretos de n8n     | `N8N_CONTACT_WEBHOOK_URL`, `N8N_CHAT_WEBHOOK_URL`, `N8N_WEBHOOK_SECRET`     |
 
-### El DNS no está donde está el hosting
+### Dónde vive cada pieza
+
+Tres proveedores distintos, y la confusión habitual es creer que son uno. Todo
+lo de abajo está verificado contra el dominio real.
 
 ```
-$ dig +short NS xtt.com.mx
-ns-cloud-d1.googledomains.com … d4
+REGISTRADOR ─── Key-Systems GmbH (whois.mx)
+                alta 2018-09-10 · vence 2027-09-10
+                    │  delega el DNS a
+                    ▼
+DNS ──────────── Google Cloud DNS          ← el interruptor está AQUÍ
+                 ns-cloud-d1…d4.googledomains.com
+                 SOA: cloud-dns-hostmaster.google.com
+                    │
+        ┌───────────┴───────────┐
+        ▼                       ▼
+   A 191.101.79.61         MX Google Workspace
+   Hostinger compartido    el correo de la empresa
+   (hPanel · LiteSpeed)         ↑
+   WordPress + Elementor    NO SE TOCA
 ```
 
-El dominio apunta a **nameservers de Google**, así que el DNS se administra
-desde una cuenta de Google, no desde hPanel. Y en ese mismo DNS vive el correo
-de la empresa:
+**Cambiar de sitio es cambiar un solo registro `A` en Google Cloud DNS.** Ni el
+registrador ni Hostinger intervienen: el registrador solo manda si se quiere
+mover el dominio o cambiar de nameservers, y Hostinger es solo a donde apunta
+hoy ese registro.
 
-```
-$ dig +short MX xtt.com.mx
-aspmx.l.google.com      (Google Workspace)
-```
+> Los `MX` y el `TXT` del SPF viven en la misma zona. Tocarlos deja a XTT sin
+> correo. Se cambia el `A` y nada más.
 
-> **Al apuntar el dominio se cambia el registro `A` y nada más.**
-> Tocar los `MX` o el `TXT` del SPF deja a XTT sin correo.
+Key-Systems es un registrador **mayorista**: casi nunca vende al cliente final,
+así que lo más probable es que XTT comprara el dominio a un revendedor suyo. La
+vía rápida para saber a cuál es buscar en el correo los avisos de renovación de
+principios de septiembre.
 
 ---
 
