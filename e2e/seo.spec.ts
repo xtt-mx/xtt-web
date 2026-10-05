@@ -6,23 +6,18 @@ import { routing } from '../src/i18n/routing';
 /**
  * `robots.txt` y `sitemap.xml`.
  *
- * Los dos se generan en tiempo de BUILD, así que esta suite solo puede ver el
- * entorno con el que se compiló —producción, porque Playwright arranca sin
- * `NEXT_PUBLIC_SITE_URL` y `siteUrl` cae al dominio canónico—. Lo que se prueba
- * aquí es esa mitad: que el sitio real se deja indexar y anuncia su sitemap
- * completo.
- *
- * La otra mitad —que una previsualización NO se deje indexar— no se puede
- * comprobar desde aquí sin un segundo build, y se verificó a mano compilando
- * con una URL que no es la canónica. El criterio vive en `src/app/robots.ts` y
- * son tres líneas; si alguna vez se complica, merece su propio build en CI.
+ * `robots.txt` decide por la cabecera `Host` de la petición, así que las dos
+ * ramas se pueden comprobar desde una sola instancia: basta con pedirlo dos
+ * veces cambiando ese encabezado. Con la versión anterior —que miraba una
+ * variable de entorno fijada en el build— habría hecho falta compilar dos veces
+ * y la mitad importante se quedaba sin test.
  */
 
 test.describe('robots.txt', () => {
-  test('el sitio de producción se deja indexar y anuncia su sitemap', async ({
-    request,
-  }) => {
-    const robots = await (await request.get('/robots.txt')).text();
+  test('en el dominio real se deja indexar y anuncia su sitemap', async ({ request }) => {
+    const robots = await (
+      await request.get('/robots.txt', { headers: { host: 'xtt.com.mx' } })
+    ).text();
 
     expect(robots).toContain('Allow: /');
     expect(robots).toContain('Sitemap:');
@@ -30,10 +25,30 @@ test.describe('robots.txt', () => {
     // Los handlers que reenvían a n8n no son páginas y no tienen nada que
     // indexar; aparecer en resultados solo invita a que los prueben.
     expect(robots).toContain('Disallow: /api/');
-
-    // Si esto aparece, el build se hizo con una URL que no es la canónica y el
-    // sitio entero quedaría fuera de Google.
     expect(robots).not.toMatch(/^Disallow: \/$/m);
+  });
+
+  /**
+   * El que de verdad protege. Un despliegue de ensayo accesible se indexa solo
+   * y acaba compitiendo en Google con el sitio real, con los textos todavía sin
+   * aprobar — y deshacerlo es pedirle a Google que olvide páginas, que tarda
+   * semanas. Si este test se pone rojo, no se publica.
+   */
+  test('en cualquier otro dominio lo prohíbe todo', async ({ request }) => {
+    for (const host of [
+      'coral-hedgehog-358900.hostingersite.com',
+      'srv1827163.hstgr.cloud',
+      'localhost:3000',
+    ]) {
+      const robots = await (
+        await request.get('/robots.txt', { headers: { host } })
+      ).text();
+
+      expect(robots, `${host} debería estar cerrado a los buscadores`).toMatch(
+        /^Disallow: \/$/m,
+      );
+      expect(robots, `${host} no debería invitar a indexar`).not.toContain('Allow: /');
+    }
   });
 });
 
