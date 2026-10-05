@@ -1,57 +1,55 @@
 import type { MetadataRoute } from 'next';
+import { headers } from 'next/headers';
 
-import { canonicalUrl, siteUrl } from '@/config/brand';
+import { canonicalUrl } from '@/config/brand';
 
 /**
  * robots.txt.
  *
- * En producción es deliberadamente permisivo: este es el sitio institucional y
- * todo lo que sirve está pensado para encontrarse. Lo único que se excluye es
- * `/api`, que no son páginas sino los dos handlers que reenvían a n8n — no
- * tienen nada que indexar y aparecer en resultados solo invita a que los
- * prueben.
+ * En el dominio real es deliberadamente permisivo: este es el sitio
+ * institucional y todo lo que sirve está pensado para encontrarse. Lo único que
+ * se excluye es `/api`, que no son páginas sino los dos handlers que reenvían a
+ * n8n — no tienen nada que indexar y aparecer en resultados solo invita a que
+ * los prueben.
  *
- * FUERA DE PRODUCCIÓN SE PROHÍBE TODO, y esto no es celo: es el único freno que
- * queda. Las páginas de este sitio salen como `index, follow` por defecto, así
- * que un despliegue de ensayo accesible se indexa solo y acaba compitiendo en
+ * EN CUALQUIER OTRO DOMINIO SE PROHÍBE TODO, y esto no es celo: es el único
+ * freno que queda. Las páginas salen como `index, follow` por defecto, así que
+ * un despliegue de ensayo accesible se indexa solo y acaba compitiendo en
  * Google con el sitio real — con los textos aún sin aprobar y las OPCIÓN 2 del
- * documento de ClickUp sin resolver. Donde hay Caddy delante, esto lo resolvía
- * `Caddyfile.preview` con contraseña; en el hosting gestionado de Hostinger no
- * hay esa capa, así que el freno tiene que vivir aquí dentro.
+ * documento de ClickUp sin resolver.
  *
- * El criterio es el DOMINIO, no una bandera aparte, para que no haya dos
- * fuentes de verdad que puedan contradecirse: si la URL pública no es la
- * canónica, esto no es producción. Y el fallo es hacia el lado seguro — una
- * variable mal puesta deja el sitio sin indexar, que se arregla en un build;
- * al revés se arregla pidiéndole a Google que olvide páginas, que tarda
- * semanas.
+ * --- Por qué mira la petición y no una variable de entorno ---
+ *
+ * La primera versión comparaba `NEXT_PUBLIC_SITE_URL` con el dominio canónico.
+ * Funciona, pero falla hacia el lado equivocado en el caso más probable: si
+ * alguien despliega y OLVIDA poner la variable, el valor cae al dominio
+ * canónico y el ensayo se declara producción. Justo entonces es cuando hace
+ * falta el freno.
+ *
+ * Leyendo la cabecera `Host` no hay nada que olvidar. El sitio sabe por sí
+ * mismo dónde está respondiendo, en cualquier entorno y sin configurar nada.
+ *
+ * El precio es que este archivo deja de ser estático y se resuelve en cada
+ * petición. Para un `robots.txt` que piden los rastreadores de vez en cuando,
+ * es gratis.
  */
 
-const esProduccion = (): boolean => {
-  try {
-    return new URL(siteUrl).hostname === new URL(canonicalUrl).hostname;
-  } catch {
-    // `siteUrl` sale de una variable de entorno: si llega rota, no es
-    // producción.
-    return false;
-  }
-};
+const robots = async (): Promise<MetadataRoute.Robots> => {
+  const host = (await headers()).get('host');
+  const esElDominioReal = host === new URL(canonicalUrl).host;
 
-const robots = (): MetadataRoute.Robots =>
-  esProduccion()
-    ? {
-        rules: {
-          userAgent: '*',
-          allow: '/',
-          disallow: '/api/',
-        },
-        sitemap: new URL('/sitemap.xml', siteUrl).toString(),
-      }
-    : {
-        rules: {
-          userAgent: '*',
-          disallow: '/',
-        },
-      };
+  if (!esElDominioReal) {
+    return { rules: { userAgent: '*', disallow: '/' } };
+  }
+
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: '/api/',
+    },
+    sitemap: new URL('/sitemap.xml', canonicalUrl).toString(),
+  };
+};
 
 export default robots;
