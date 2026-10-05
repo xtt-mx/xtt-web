@@ -62,4 +62,16 @@ export const accentUsage = {
   textOnDark: '#6A85FF',
 } as const;
 
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://xtt.com.mx';
+/**
+ * El dominio definitivo del sitio, pase lo que pase en el entorno.
+ *
+ * Está aparte de `siteUrl` porque son dos cosas distintas que antes se
+ * confundían en un solo literal: ésta es la dirección CANÓNICA del sitio, y
+ * `siteUrl` es dónde está corriendo esta instancia. Coinciden en producción y
+ * no coinciden en una previsualización, y de esa diferencia depende que
+ * `robots.ts` deje o no que Google indexe lo que está viendo.
+ */
+export const canonicalUrl = 'https://xtt.com.mx';
+
+/** Dónde corre ESTA instancia. En producción es `canonicalUrl`. */
+export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? canonicalUrl;
