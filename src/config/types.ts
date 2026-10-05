@@ -13,19 +13,7 @@ export type SolutionId = 'ccaas' | 'sbc-telecom-data' | 'messaging' | 'sip';
 
 /** Clave estable de un país donde XTT tiene presencia. ISO 3166-1 alpha-2. */
 export type CountryCode =
-  | 'MX'
-  | 'GT'
-  | 'BZ'
-  | 'SV'
-  | 'HN'
-  | 'NI'
-  | 'CR'
-  | 'PA'
-  | 'CO'
-  | 'DO'
-  | 'PR'
-  | 'JM'
-  | 'TT';
+  'MX' | 'GT' | 'BZ' | 'SV' | 'HN' | 'NI' | 'CR' | 'PA' | 'CO' | 'DO' | 'PR' | 'JM';
 
 /** Agrupación comercial que usa XTT para hablar de su territorio. */
 export type RegionId = 'mexico' | 'centroamerica' | 'caribe' | 'colombia';

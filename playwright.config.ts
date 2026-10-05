@@ -37,5 +37,18 @@ export default defineConfig({
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    env: {
+      /**
+       * El chat se prueba encendido aunque en producción siga apagado a la
+       * espera de que el cliente apruebe el aviso de privacidad. Si la suite
+       * corriera con la bandera de producción, las pruebas del widget se
+       * saltarían solas y la función llegaría al día del lanzamiento sin que
+       * nadie la haya ejercitado nunca.
+       *
+       * Enciende también la sección del chat en el aviso; `privacidad.spec.ts`
+       * cuenta con ella.
+       */
+      NEXT_PUBLIC_CHAT_ENABLED: 'true',
+    },
   },
 });

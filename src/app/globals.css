@@ -27,6 +27,12 @@
   --color-accent-text: #0a2dff;
   --color-accent-contrast: #ffffff;
   --color-accent-dim: #0a2dff14;
+  /* Niebla y estrellas del escenario orbital del hero. Son capas de fondo, no
+     tipografía: nunca llevan texto encima, así que no les aplica la regla de
+     contraste del acento. En claro la mota es azul y no gris, para que la
+     textura pertenezca a la rampa de marca en vez de leerse como suciedad. */
+  --color-accent-fog: #0a2dff33;
+  --color-star: #0a2dff40;
 
   /* Error. Mismo criterio que el acento: un token para borde y otro para texto,
      porque el rojo que se ve bien como línea no siempre pasa contraste como
@@ -51,9 +57,19 @@
 :root {
   --ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  /* La única simétrica, y hace falta: un vaivén con `alternate` y una curva de
+     SALIDA sale disparado y se queda esperando en el extremo, que es lo
+     contrario de respirar. Para eso las dos puntas tienen que frenar igual. */
+  --ease-in-out-sine: cubic-bezier(0.37, 0, 0.63, 1);
   --dur-fast: 140ms;
   --dur-base: 220ms;
   --dur-slow: 420ms;
+
+  /* Elevación. El único elemento que flota sobre la página es el panel del chat;
+     mientras siga siendo así, un token basta y no hace falta una escala.
+     Va aquí y no en `@theme` porque no es un rol de color y no queremos que
+     Tailwind genere una utilidad `shadow-panel` que nadie va a escribir. */
+  --shadow-panel: 0 10px 30px rgb(0 0 0 / 0.13), 0 2px 6px rgb(0 0 0 / 0.06);
 
   /* Deja que scrollbars, inputs nativos y autofill sigan el tema. */
   color-scheme: light dark;
@@ -86,11 +102,20 @@
     --color-accent-text: #6a85ff;
     --color-accent-contrast: #ffffff;
     --color-accent-dim: #0a2dff1a;
+    /* Sobre negro el azul se apaga: la niebla necesita casi el doble de alfa
+       que en claro para que se note, y las estrellas pasan a blanco. */
+    --color-accent-fog: #0a2dff40;
+    --color-star: #ffffff33;
 
     /* El rojo del tema claro sobre negro queda muy oscuro; este da 8.7:1. */
     --color-danger: #f05252;
     --color-danger-text: #ff8a8a;
     --color-danger-dim: #f0525218;
+
+    /* Una sombra negra sobre #0B0B0B no se ve. Se sube la opacidad para que al
+       menos separe del borde del viewport, pero quien hace el trabajo real de
+       delimitar el panel en oscuro es su borde `--color-rule`. */
+    --shadow-panel: 0 10px 34px rgb(0 0 0 / 0.6);
 
     color-scheme: dark;
   }
@@ -110,10 +135,14 @@
   --color-accent-text: #6a85ff;
   --color-accent-contrast: #ffffff;
   --color-accent-dim: #0a2dff1a;
+  --color-accent-fog: #0a2dff40;
+  --color-star: #ffffff33;
 
   --color-danger: #f05252;
   --color-danger-text: #ff8a8a;
   --color-danger-dim: #f0525218;
+
+  --shadow-panel: 0 10px 34px rgb(0 0 0 / 0.6);
 
   color-scheme: dark;
 }
@@ -135,6 +164,11 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  /* El header es `sticky` y mide 69 px con su filete. Sin esto, cualquier
+     ancla deja su título justo debajo de la barra y parece que el enlace
+     apuntó mal. Va en `html` y no en cada destino para que valga también para
+     las anclas que se añadan después. */
+  scroll-padding-top: 92px;
 }
 
 body {
@@ -324,6 +358,25 @@ select {
    MOTION
    Reveal escalonado por --i, sin librería.
    ========================================================================== */
+
+/* Ángulo de la órbita del hero.
+
+   Va aquí y no en el CSS Module porque `@property` registra un nombre GLOBAL:
+   declararlo desde un módulo daría la falsa impresión de que está encapsulado.
+
+   Registrarlo no es opcional. Una custom property sin tipo no se interpola —el
+   navegador salta de un valor al otro a mitad de la animación— así que sin este
+   bloque la órbita no gira, da un tirón. Y como el valor inicial es 0deg, un
+   navegador que no soporte `@property` deja cada nodo en su ángulo base: la
+   composición se ve quieta, pero bien armada. Esa es la degradación buscada.
+
+   `inherits: true` es lo que permite que UNA sola animación, puesta en el
+   escenario, mueva las cuatro soluciones a la vez. */
+@property --spin {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
 
 @keyframes reveal-fade {
   from {

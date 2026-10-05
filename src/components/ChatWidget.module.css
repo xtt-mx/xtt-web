@@ -1,0 +1,319 @@
+/* El único `position: fixed` del proyecto. Se queda por debajo del skip link
+   (60) y por encima del header (50): el chat nunca debe tapar el primer tab de
+   la página, pero sí debe flotar sobre el contenido. */
+.root {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+/* --- Burbuja --------------------------------------------------------------
+   Cuadrada con el radio de la casa, no un círculo. El círculo es el gesto por
+   defecto de todo widget de chat de plantilla; el marco cuadrado además rima
+   con el logotipo.
+   -------------------------------------------------------------------------- */
+
+.bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  box-shadow: var(--shadow-panel);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-base) var(--ease-out-quart),
+    transform var(--dur-fast) var(--ease-out-quart);
+}
+
+.bubble:hover {
+  background: color-mix(in oklab, var(--color-accent) 82%, black);
+}
+
+.bubble:active {
+  transform: translateY(1px);
+}
+
+/* --- Panel ---------------------------------------------------------------- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  height: 520px;
+  max-height: calc(100vh - 140px);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+  animation: chat-in var(--dur-base) var(--ease-out-expo) both;
+}
+
+/* `hidden` debe ganarle al `display: flex` de arriba. */
+.panel[hidden] {
+  display: none;
+}
+
+@keyframes chat-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: none;
+  padding: 14px 12px 14px 16px;
+  border-bottom: 1px solid var(--color-rule);
+  background: var(--color-bg-2);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: var(--color-fg);
+}
+
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-fg-2);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out-quart),
+    border-color var(--dur-fast) var(--ease-out-quart);
+}
+
+.close:hover {
+  color: var(--color-fg);
+  border-color: var(--color-rule-strong);
+}
+
+/* --- Conversación --------------------------------------------------------- */
+
+.log {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.message {
+  max-width: 85%;
+  padding: 9px 13px;
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  /* Una URL o un identificador largo no debe ensanchar la burbuja. */
+  overflow-wrap: anywhere;
+}
+
+.fromBot {
+  align-self: flex-start;
+  background: var(--color-bg-2);
+  color: var(--color-fg);
+  border: 1px solid var(--color-rule);
+}
+
+/* Relleno de acento con texto blanco encima: 7.3:1. El azul base NUNCA se usa
+   como color de texto — ver la tabla de CLAUDE.md y `e2e/theme.spec.ts`. */
+.fromUser {
+  align-self: flex-end;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.typing {
+  color: var(--color-fg-3);
+}
+
+.error {
+  flex: none;
+  margin: 0 16px 12px;
+  padding: 9px 13px;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  background: var(--color-danger-dim);
+  color: var(--color-danger-text);
+  font-size: 0.875rem;
+}
+
+/* --- Composición ---------------------------------------------------------- */
+
+.composer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 10px;
+  border-top: 1px solid var(--color-rule);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+  font-size: 0.9375rem;
+  transition: border-color var(--dur-fast) var(--ease-out-quart);
+}
+
+.input:hover {
+  border-color: var(--color-rule-strong);
+}
+
+.input::placeholder {
+  color: var(--color-fg-3);
+}
+
+.send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out-quart);
+}
+
+.send:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--color-accent) 82%, black);
+}
+
+.send:disabled {
+  background: var(--color-bg-3);
+  color: var(--color-fg-3);
+  cursor: not-allowed;
+}
+
+/* --- Pie ------------------------------------------------------------------ */
+
+/* En columna y no lado a lado: repartidos horizontalmente, al aviso le quedaban
+   215 px y rompía en tres líneas contra un enlace de una. */
+.foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  flex: none;
+  padding: 0 16px 12px;
+}
+
+.footLink {
+  flex: none;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-accent-text);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out-quart);
+}
+
+.footLink:hover {
+  border-bottom-color: var(--color-accent-text);
+}
+
+.disclaimer {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--color-fg-3);
+}
+
+/* Visible para lectores de pantalla, invisible en pantalla. El placeholder no
+   es una etiqueta: desaparece al escribir. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --- Móvil ----------------------------------------------------------------
+   El panel toma la pantalla completa. A 375 px, 380 px de ancho flotando sobre
+   el contenido no cabe, y media conversación quedaría fuera del viewport.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 620px) {
+  .root {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .panel {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+  }
+
+  /* Con el panel ocupando la pantalla, la burbuja sobra: cerrar ya es la X de la
+     cabecera, y flotando encima solo taparía el pie.
+
+     Hoy queda oculta igualmente porque el panel es `position: fixed` y ella
+     `static`, y lo posicionado pinta por encima. Eso es una casualidad del orden
+     de pintado, no una decisión: bastaría dar `position: relative` a la burbuja
+     en el futuro para que reapareciera encima del panel sin que nadie entienda
+     por qué. Esto lo deja dicho. */
+  .root[data-open='true'] .bubble {
+    display: none;
+  }
+}
+
+/* En pantallas táctiles el objetivo crece: mismo criterio que el toggle de tema. */
+@media (pointer: coarse) {
+  .close {
+    width: 38px;
+    height: 38px;
+  }
+}

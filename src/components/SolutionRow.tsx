@@ -1,26 +1,10 @@
-import { Headset, MessagesSquare, PhoneCall, ShieldCheck } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import type { LucideIcon } from 'lucide-react';
 
-import type { Solution, SolutionId } from '@/config/types';
+import { SOLUTION_ICONS } from '@/components/solutionIcons';
+import type { Solution } from '@/config/types';
 import { cn } from '@/lib/cn';
 
 import styles from './SolutionRow.module.css';
-
-/**
- * Ícono por solución.
- *
- * Vive aquí y no en `src/config` porque ese directorio no puede importar runtime
- * de React (ver CLAUDE.md). Guardar el nombre como string allá y resolverlo en
- * tiempo de ejecución rompería el tree-shaking de lucide, así que el mapa es
- * estático y explícito: si se agrega una solución, TypeScript exige su ícono.
- */
-const ICONS: Record<SolutionId, LucideIcon> = {
-  ccaas: Headset,
-  'sbc-telecom-data': ShieldCheck,
-  messaging: MessagesSquare,
-  sip: PhoneCall,
-};
 
 interface SolutionRowProps {
   readonly solution: Solution;
@@ -29,10 +13,14 @@ interface SolutionRowProps {
 
 export const SolutionRow = async ({ solution, index }: SolutionRowProps) => {
   const t = await getTranslations('solutions');
-  const Icon = ICONS[solution.id];
+  const Icon = SOLUTION_ICONS[solution.id];
 
   return (
     <li
+      /* Ancla del enlace que trae desde la órbita del hero. Es la clave estable
+         de la solución, la misma que ya usan las URLs y las claves de i18n, así
+         que el destino no se puede desincronizar del origen. */
+      id={solution.id}
       className={cn(styles.row, index % 2 === 1 && styles.rowAlt)}
       style={{ '--i': index } as React.CSSProperties}
     >

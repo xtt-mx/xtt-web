@@ -1,21 +1,31 @@
 .hero {
   position: relative;
-  overflow: hidden;
+  /* `clip` y no `hidden`: recorta igual pero no genera un contexto de scroll ni
+     aplana nada. La niebla del escenario se desborda a propósito. */
+  overflow: clip;
   border-bottom: 1px solid var(--color-rule);
 }
 
 /* Asimétrico: la copy ocupa menos que el escenario, y el conjunto no está
-   centrado en la página. Dos mitades iguales es lo que hace toda plantilla. */
+   centrado en la página. Dos mitades iguales es lo que hace toda plantilla.
+
+   El escenario se llevó más peso que antes (0.78 contra 1) porque la órbita
+   estaba desaprovechando su columna: con el tope viejo se quedaba en 560 px
+   dentro de un hueco de ~710 y se leía pequeña en el centro de mucho aire. */
 .inner {
   display: grid;
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr);
   align-items: center;
-  gap: 64px;
-  min-height: min(84vh, 760px);
+  gap: 56px;
+  min-height: min(86vh, 820px);
   padding-block: 72px;
 }
 
+/* El escenario es un elemento posicionado y la copy no lo era: sin esto, la
+   niebla del hero se pintaría ENCIMA del titular. */
 .copy {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -51,58 +61,534 @@
   animation-delay: 240ms;
 }
 
-/* --- Escenario orbital ---------------------------------------------------- */
+/* ==========================================================================
+   ESCENARIO ORBITAL
+
+   Una sola propiedad registrada, `--spin`, gira aquí y la heredan todos los
+   descendientes. De ella salen por trigonometría la posición, la escala, la
+   opacidad y el apilado de cada nodo: UNA animación mueve las cuatro
+   soluciones, así que es imposible que se desincronicen.
+
+   `--spin: 0deg` está declarado a mano además de registrado en `globals.css`
+   porque un navegador sin `@property` no conoce el `initial-value`, y sin
+   declaración `var(--spin)` invalidaría todos los `calc()` de golpe. Con la
+   declaración, ese navegador deja cada nodo en su ángulo base: quieto, pero
+   bien compuesto.
+   ========================================================================== */
 
 .stage {
   position: relative;
+  /* Habilita `cqw` dentro del escenario. Es lo que permite que el radio del
+     nodo al centro se mida contra el ESCENARIO y no contra la etiqueta, que es
+     el único elemento cuyo tamaño conocen los descendientes del nodo. */
+  container-type: size;
   aspect-ratio: 1;
   width: 100%;
-  max-width: 560px;
+  max-width: min(100%, 760px);
   margin-inline: auto;
   display: grid;
   place-items: center;
+
+  /* Semiejes de la elipse, en porcentaje del escenario. Coinciden con el
+     `rx`/`ry` de la elipse principal del SVG (64 y 38 sobre un viewBox de 200):
+     si se cambian aquí, hay que cambiarlos allá o los nodos dejan de pisar la
+     línea.
+
+     Los dos números salen de una cuenta, no del gusto.
+
+     `--rx` (32): la placa mide 186 px, así que el nodo más lateral llega a
+     `0.32·S + 93`. Para que eso quepa en `S/2` hace falta S ≥ 517 px, y de ahí
+     sale el corte a lista en 1100 px de viewport.
+
+     `--ry` (19): la placa del frente pasa a `0.19·S` por debajo del centro y
+     mide 54 px de alto, así que su borde superior queda a `0.19·S − 27`. El
+     logotipo llega a 75 px. Con 16 se solapaban y la placa tapaba el canto del
+     wordmark; con 19 lo libra por unos 36 px a 733 px de escenario. Tapar la
+     marca no es un efecto de profundidad, es tapar la marca.
+
+     Aun así la elipse sigue siendo PLANA (19 contra 32). Con una más redonda el
+     nodo del fondo pasa muy por encima del logo —176 px, medido— y la bruma no
+     lo roza siquiera: el apilado funcionaría sin que se viera nada, y toda la
+     profundidad se quedaría en la escala. */
+  --rx: 32;
+  --ry: 19;
+  --orbit-dur: 35s;
+  --spin: 0deg;
+
+  animation:
+    orbit-spin var(--orbit-dur) linear infinite,
+    reveal-fade 900ms var(--ease-out-expo) both;
 }
+
+@keyframes orbit-spin {
+  to {
+    --spin: 360deg;
+  }
+}
+
+/* NO hay pausa al pasar el CURSOR, a propósito: el cliente la quitó.
+   La contrapartida es que las etiquetas nunca se detienen, y por eso la vuelta
+   pasó de 20 s a 35 s —la mitad de velocidad de desplazamiento— y por eso el
+   estado de reposo de un nodo tiene que ser legible por sí solo. De ahí que
+   también se fuera el desenfoque y que subiera la opacidad mínima.
+
+   Con el TECLADO es distinto y aquí sí se para. Las placas son enlaces: si la
+   órbita sigue girando mientras alguien tabula, el anillo de foco se pasea solo
+   por la pantalla y quien navega así pierde el sitio. Con el ratón se apunta y
+   se corrige sobre la marcha; con el teclado no hay a dónde apuntar. No es la
+   misma interacción y no merece la misma regla. */
+.stage:focus-within,
+.stage:focus-within * {
+  animation-play-state: paused;
+}
+
+/* --- Capas 0-2: niebla, estrellas y trama -------------------------------- */
+
+/* SIN máscara aquí, y es lo que más rendimiento devolvió de todo: **9 fps**,
+   de 51 a 60.
+
+   Llevaba una máscara radial en este contenedor para desvanecer el fondo hacia
+   los bordes. El problema es que una máscara agrupa: en cuanto CUALQUIER cosa
+   de dentro se anima —la niebla, el titileo de una capa de estrellas— el
+   navegador tiene que rerasterizar el grupo entero, y el grupo son varias capas
+   de más de mil píxeles de lado. Medido capa por capa parecía que el coste
+   estaba repartido entre la niebla, las estrellas y el titileo; en realidad era
+   siempre el mismo: la máscara de aquí.
+
+   El desvanecido no se perdió, se movió a donde no agrupa nada: la niebla ya se
+   apaga por su propio degradado, y `.stars` y `.grid` llevan cada una la suya.
+   Se ve igual y sale gratis. */
+.backdrop {
+  position: absolute;
+  inset: -16%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Grano.
+   ---------------------------------------------------------------------------
+   El azul de la niebla sobre `#0b0b0b` recorre muy pocos valores a lo largo de
+   cientos de píxeles, y en una pantalla de 8 bits eso se ve: aparecen los
+   escalones del degradado en anillos concéntricos. El ruido los rompe porque
+   desordena el redondeo, y de paso le da al escenario textura de imagen en vez
+   de acabado de render.
+
+   Va sobre TODA LA SECCIÓN, y las dos veces que lo puse más abajo se vio por
+   qué no. Dentro de `.backdrop` dejaba la bruma del núcleo —que se pinta
+   encima— como un disco liso recortado contra un campo granulado: volvía a
+   aparecer justo el canto que tanto costó quitar. Y acotado al escenario
+   dibujaba un rectángulo, porque un grano claro sobre negro levanta los negros
+   y el borde del elemento se hacía visible como una línea recta en mitad del
+   hero. El grano, como en una película, es de la imagen entera o no es de
+   nada.
+
+   SIN `mix-blend-mode`, y esto no es una preferencia: medido, mezclar esta capa
+   con `soft-light` costaba **26 fps**. Un blend obliga a recomponer todo el
+   contexto de apilado en cada frame, y aquí debajo hay una órbita girando. Con
+   opacidad plana el grano modula menos y levanta un pelo los negros, pero
+   dithera el degradado —que es para lo que está— y sale gratis.
+
+   `feColorMatrix` lo dessatura: `feTurbulence` genera ruido en color y a esta
+   opacidad se vería como motas de colores sobre el azul.
+
+   `pointer-events: none` para no robarle el clic a las placas, que ahora son
+   enlaces. El data URI evita pagar una petición por 300 bytes. */
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Un ANILLO de luz alrededor de la marca, no una mancha encima.
+   ---------------------------------------------------------------------------
+   Vivía arriba a la izquierda: la zona más luminosa del cuadro no coincidía con
+   el logotipo y el conjunto quedaba escorado. Pero centrarla sin más fue peor,
+   porque justo ahí está la bruma que oculta los nodos: el velo, que es del
+   color del fondo, quedaba recortado contra el punto más brillante de la
+   niebla y se leía como un agujero.
+
+   Con el degradado arrancando en transparente y abriendo hacia fuera, el punto
+   caliente cae FUERA del velo. El centro queda en calma, la marca se recorta
+   contra un resplandor que la rodea, y el velo deja de tener contra qué
+   recortarse.
+
+   SIN `filter: blur()`, y aquí hubo que aprender a base de medir. Llevaba
+   `blur(26px)` con la teoría de que un desenfoque estático se rasteriza una vez
+   y luego el compositor solo mueve la capa. En la práctica costaba **8 fps**:
+   el elemento mide casi 900 px, se anima, y el navegador acaba rehaciendo el
+   desenfoque. Y era redundante — un degradado radial ya es suave por
+   definición. Se quitó el blur, se abrieron las paradas para recuperar la
+   suavidad que aportaba, y el grano se ocupa del bandeo.
+
+   El centrado va en `margin` y no en `translate` porque ahí se pelearía con la
+   animación de deriva. */
+.fog {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 78%;
+  height: 78%;
+  margin-left: -39%;
+  margin-top: -39%;
+  border-radius: 50%;
+  /* `closest-side` NO es un detalle: es la causa de todos los cantos que se
+     fueron persiguiendo uno a uno.
+
+     Un `radial-gradient(circle, …)` mide su 100 % hasta la ESQUINA de la caja
+     por defecto. Pero la caja está recortada a un círculo por `border-radius`,
+     y el radio es la esquina dividida por √2. O sea que en el borde visible el
+     degradado solo había recorrido el 71 % de su recorrido y todavía tenía
+     color: el recorte lo cortaba en seco. De ahí los discos con filo, tanto
+     aquí como en la bruma del núcleo.
+
+     Con `closest-side` el 100 % cae exactamente donde recorta el
+     `border-radius`, así que el degradado se apaga justo en su propio borde y
+     no hay nada que cortar. */
+  background: radial-gradient(
+    circle closest-side,
+    transparent 12%,
+    var(--color-accent-fog) 50%,
+    transparent 100%
+  );
+  animation: fog-drift 26s var(--ease-in-out-sine) infinite alternate;
+}
+
+/* Esta sí va descentrada: es la que rompe la simetría y evita que el fondo
+   parezca un foco puesto justo en el medio. */
+.fogAlt {
+  left: auto;
+  top: auto;
+  right: 4%;
+  bottom: 8%;
+  width: 46%;
+  height: 46%;
+  margin: 0;
+  /* Esta no es un anillo sino una mancha: va descentrada y su trabajo es romper
+     la simetría, no rodear nada. */
+  background: radial-gradient(
+    circle closest-side,
+    var(--color-accent-fog) 0%,
+    transparent 100%
+  );
+  animation-duration: 37s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes fog-drift {
+  from {
+    transform: translate3d(-4%, 3%, 0) scale(0.9);
+  }
+  to {
+    transform: translate3d(7%, -6%, 0) scale(1.14);
+  }
+}
+
+/* Tres capas de motas a distinto tamaño y brillo. Las posiciones están escritas
+   a mano y no sorteadas: un `Math.random()` en el servidor haría el build
+   irreproducible.
+
+   LAS CAPAS NO SE MUEVEN, y la razón es dura pero clara. Llevaban una deriva de
+   paralaje, cada una a su velocidad. Medido: esa deriva costaba **26 fps** —de
+   60 a 34— porque son tres capas de más de mil píxeles de lado que el navegador
+   recompone en cada frame. Y a 1,3 px por segundo, que es lo que avanzaban,
+   nadie la percibe. Se estaba pagando un tercio del presupuesto de animación
+   por un efecto que no se ve.
+
+   La profundidad la siguen dando el tamaño, la densidad y la opacidad de cada
+   capa, que no cuestan nada. El único movimiento que queda en el fondo es el
+   titileo de `.starsMid`, que solo toca `opacity` y no repinta. */
+.stars {
+  position: absolute;
+  inset: -20%;
+  background-repeat: repeat;
+  /* El desvanecido que antes hacía la máscara de `.backdrop`. Aquí no agrupa a
+     nadie: cada capa se enmascara sola, y la que titila lo hace sobre su propia
+     capa ya rasterizada. En una máscara solo cuenta el alfa, así que
+     `currentColor` sirve de opaco y evita escribir un color literal. */
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    currentColor 30%,
+    transparent 66%
+  );
+  mask-image: radial-gradient(circle at 50% 50%, currentColor 30%, transparent 66%);
+}
+
+.starsFar {
+  --tile: 190px;
+  background-image:
+    radial-gradient(1px 1px at 11% 17%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 64% 9%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 33% 52%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 87% 41%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 52% 78%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 8% 88%, var(--color-star), transparent),
+    radial-gradient(1px 1px at 74% 69%, var(--color-star), transparent);
+  background-size: var(--tile) var(--tile);
+  opacity: 0.5;
+}
+
+.starsMid {
+  --tile: 132px;
+  background-image:
+    radial-gradient(1.4px 1.4px at 23% 31%, var(--color-star), transparent),
+    radial-gradient(1.4px 1.4px at 79% 14%, var(--color-star), transparent),
+    radial-gradient(1.4px 1.4px at 46% 63%, var(--color-star), transparent),
+    radial-gradient(1.4px 1.4px at 92% 82%, var(--color-star), transparent),
+    radial-gradient(1.4px 1.4px at 15% 71%, var(--color-star), transparent);
+  background-size: var(--tile) var(--tile);
+  /* Solo titila esta de las tres: si parpadean todas a la vez el fondo se pone
+     nervioso y deja de ser fondo. Es `opacity`, que el compositor resuelve sin
+     repintar — por eso esta sí se puede permitir. */
+  animation: star-twinkle 7.5s var(--ease-in-out-sine) infinite alternate;
+}
+
+@keyframes star-twinkle {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+.starsNear {
+  --tile: 88px;
+  background-image:
+    radial-gradient(1.8px 1.8px at 37% 22%, var(--color-star), transparent),
+    radial-gradient(1.8px 1.8px at 81% 58%, var(--color-star), transparent),
+    radial-gradient(1.8px 1.8px at 19% 84%, var(--color-star), transparent);
+  background-size: var(--tile) var(--tile);
+}
+
+/* Retícula muy tenue que se apaga hacia los bordes: le da sustancia al vacío
+   sin dibujar una línea que compita con las elipses. */
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    var(--color-rule-strong) 1px,
+    transparent 1px
+  );
+  background-size: 26px 26px;
+  opacity: 0.4;
+  -webkit-mask-image: radial-gradient(
+    circle at 50% 50%,
+    currentColor 18%,
+    transparent 60%
+  );
+  mask-image: radial-gradient(circle at 50% 50%, currentColor 18%, transparent 60%);
+}
+
+/* --- Capas 3-4: elipses y pulsos ----------------------------------------- */
 
 .rings {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  animation: reveal-fade 900ms var(--ease-out-expo) both;
+  animation-delay: 120ms;
 }
 
-/* 70% y no 100%: los nodos se apoyan en este anillo, y una etiqueta de 168 px
-   centrada sobre el borde del escenario dejaría la mitad fuera del recorte. */
-.ring {
-  position: absolute;
-  width: 70%;
-  height: 70%;
-  border: 1px dashed var(--color-rule-strong);
-  border-radius: 50%;
-  opacity: 0.7;
+/* Dos elipses concéntricas y sin inclinar: la principal, donde viajan los
+   nodos, y una exterior muy tenue que da caja.
+
+   El trazo NO es un gris plano: es el degradado vertical del `<defs>`, que apaga
+   la línea arriba —la mitad que se va al fondo— y la deja plena abajo. Es lo que
+   hace que el óvalo se lea como un plano inclinado, y sale gratis en objetos. */
+.ringMain,
+.ringOuter {
+  stroke: url('#xtt-orbit-fade');
+  stroke-width: 1;
+  /* La línea queda en 1 px real aunque el escenario mida 760 px. */
+  vector-effect: non-scaling-stroke;
 }
 
-.ringInner {
-  width: 40%;
-  height: 40%;
-  border-style: solid;
-  border-color: var(--color-rule);
-  opacity: 1;
+.ringMain {
+  opacity: 0.95;
 }
 
-/* El logotipo ya trae su propio marco cuadrado (manual, pág. 5), así que el
-   círculo que había aquí antes solo duplicaba un contorno. Queda el disco de
-   fondo para separar la marca de las líneas de órbita que pasan por detrás. */
+.ringOuter {
+  opacity: 0.4;
+}
+
+/* Las paradas del degradado. Van por clase y no por atributo para no escribir
+   un color: el token sigue siendo la única fuente. */
+.ringFadeFar,
+.ringFadeMid,
+.ringFadeNear {
+  stop-color: var(--color-rule-strong);
+}
+
+.ringFadeFar {
+  stop-opacity: 0.32;
+}
+
+.ringFadeMid {
+  stop-opacity: 0.78;
+}
+
+.ringFadeNear {
+  stop-opacity: 1;
+}
+
+/* El motivo propio del sitio: tráfico moviéndose por la red.
+   ---------------------------------------------------------------------------
+   El guion va en UNIDADES DEL viewBox contra el perímetro real de la elipse
+   (326 con rx 64 / ry 38, medido), y NO en porcentaje vía `pathLength`.
+
+   Se hacía con `pathLength="100"` y `stroke-dasharray: 9 91`, dando por hecho
+   que el perímetro quedaba normalizado a 100. No quedaba: el patrón se repetía
+   3,36 veces por vuelta, así que en lugar de un destello recorriendo la órbita
+   salían seis u ocho guiones azules repartidos por el anillo, que no leían como
+   nada. Medido en el navegador, no deducido.
+
+   Por eso tampoco lleva `non-scaling-stroke`: ese sí resuelve el trazo en
+   píxeles de pantalla, y mezclarlo con un guion en unidades de usuario es otra
+   forma de acabar sin saber cuánto mide el destello. Aquí todo está en el mismo
+   sistema y el resultado es exactamente un destello del 7 % de la vuelta.
+
+   La duración TAMPOCO es un número libre: son cuatro vueltas por cada vuelta de
+   la órbita. De esa relación sale el momento exacto en que el cometa alcanza a
+   cada nodo, que es lo que gobierna su encendido. Ver `.nodeInner`. */
+.pulse {
+  stroke: var(--color-accent-text);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+  /* 22 + 304 = 326 = el perímetro. Cualquier pareja que no sume eso vuelve a
+     repartir guiones por el anillo. */
+  stroke-dasharray: 22 304;
+  animation: pulse-run calc(var(--orbit-dur) / 4) linear infinite;
+}
+
+/* Copia ancha y casi transparente, en la misma fase: el resplandor de la cabeza
+   sin pagar un filtro SVG. */
+.pulseHalo {
+  stroke-width: 2.6;
+  opacity: 0.2;
+}
+
+/* La cola. Dos segmentos que van por DETRÁS de la cabeza y que son cada vez más
+   largos y más tenues, que es como se ve una estela: no se dispersa, se estira.
+
+   Ir por detrás se consigue con un retardo positivo, no con otro `dashoffset`:
+   un retardo de δ deja al segmento exactamente δ menos avanzado sobre el mismo
+   recorrido, así que la cola nunca se despega de la cabeza aunque se cambie la
+   duración. */
+.pulseTailNear {
+  stroke-width: 0.5;
+  stroke-dasharray: 34 292;
+  opacity: 0.45;
+  animation-delay: 0.35s;
+}
+
+.pulseTailFar {
+  stroke-width: 0.35;
+  stroke-dasharray: 52 274;
+  opacity: 0.2;
+  animation-delay: 0.9s;
+}
+
+@keyframes pulse-run {
+  to {
+    stroke-dashoffset: -326;
+  }
+}
+
+/* --- Capa 5: el núcleo ---------------------------------------------------- */
+
+/* El logotipo ya trae su propio marco cuadrado (manual, pág. 5), así que aquí no
+   se le agrega ningún contorno: solo el disco opaco que lo separa de la elipse
+   —y de los nodos— que pasan por detrás. */
 .core {
   position: relative;
-  z-index: 2;
+  z-index: 5;
   display: grid;
   place-items: center;
-  width: 34%;
+  width: 32%;
   aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--color-bg);
-  --logo-size: clamp(56px, 13vw, 118px);
+  --logo-size: clamp(68px, 11vw, 150px);
+  animation: reveal-fade 700ms var(--ease-out-quart) both;
 }
+
+/* La bruma que oculta lo que pasa por detrás de la marca.
+   ---------------------------------------------------------------------------
+   Antes esto era el `background` del propio núcleo: un disco OPACO de borde
+   duro, del 32 % del escenario. Sobre la niebla azul dibujaba una
+   circunferencia perfectamente visible —blanca en claro, negra en oscuro— que
+   no se leía como un elemento de diseño sino como un borrón alrededor del logo.
+
+   Ahora es un degradado del color del fondo que se desvanece: contra un fondo
+   plano es literalmente invisible, y sobre la niebla se lee como atmósfera.
+   Sigue tapando el nodo del fondo, que es su único trabajo, y encima lo hace
+   mejor: el nodo se DESVANECE al entrar en vez de quedar cortado por un canto.
+
+   Está dimensionada contra el LOGOTIPO y no contra la órbita, y la diferencia
+   importa. El primer intento tapaba hasta el 21 % del escenario —justo lo que
+   hacía falta para ocultar entero el nodo del fondo— y el resultado fue un
+   agujero negro de 470 px que se comía la niebla, los anillos y una solución
+   completa: durante un cuarto de vuelta, «Telefonía SIP» simplemente no
+   existía. Ocultar del todo una de las cuatro soluciones no es profundidad, es
+   perder información.
+
+   Ahora queda ceñida al logotipo y con una caída LARGA: sólida solo hasta el
+   ~6 % del escenario y transparente en el 21 %, o sea más de 100 px de rampa.
+   Ahí está la clave. Con una caída corta el velo vuelve a tener canto —se ve la
+   circunferencia recortada contra la niebla, que es justo el defecto del que
+   veníamos—; con una larga no hay ningún punto donde empiece o acabe.
+
+   El nodo del fondo pasa por el 16 %, es decir por el último tercio de la
+   rampa, y la cruza entero de arriba abajo: se atenúa de forma continua en vez
+   de quedar cortado a media placa. Un velo más ancho dejaba ver media caja con
+   su esquina, y eso no lee como profundidad, lee como un fallo de pintado. */
+.core::before {
+  content: '';
+  position: absolute;
+  inset: -16%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    var(--color-bg) 0%,
+    var(--color-bg) 30%,
+    transparent 100%
+  );
+}
+
+/* Entre la bruma y el logotipo: un resplandor de acento pegado a la marca. Sin
+   `z-index` a propósito — el orden del DOM ya lo pone por encima del `::before`
+   y por debajo del logo, que es justo donde va. */
+.halo {
+  position: absolute;
+  inset: -30%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle closest-side,
+    var(--color-accent-dim) 0%,
+    transparent 100%
+  );
+  animation: halo-breathe 7s var(--ease-in-out-sine) infinite alternate;
+}
+
+@keyframes halo-breathe {
+  from {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+/* --- Capas 6-7: los nodos ------------------------------------------------- */
 
 .orbit {
   position: absolute;
@@ -110,79 +596,265 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  z-index: 3;
+  /* Deliberadamente SIN `z-index`, `opacity`, `filter` ni `backdrop-filter`:
+     cualquiera de los cuatro crearía un contexto de apilado aquí y entonces
+     ningún nodo podría pasar por detrás del núcleo, que es el detalle del que
+     depende toda la sensación de profundidad. */
+}
+
+.node {
+  --a: calc(var(--base) + var(--spin));
+  --nx: calc(cos(var(--a)) * var(--rx));
+  --ny: calc(sin(var(--a)) * var(--ry));
+  /* 0 detrás (arriba de la elipse), 1 delante (abajo). En una elipse vista en
+     escorzo, lo que está más abajo está más cerca. */
+  --depth: calc((sin(var(--a)) + 1) / 2);
+
+  position: absolute;
+  /* La posición va en `left`/`top` y NO dentro de `translate`: un porcentaje
+     dentro de `translate` se resuelve contra el propio elemento, así que los
+     cuatro nodos acababan amontonados en el centro. */
+  left: calc(50% + var(--nx) * 1%);
+  top: calc(50% + var(--ny) * 1%);
+  display: grid;
+  place-items: center;
+
+  /* Las señales de profundidad, todas función del mismo ángulo.
+     Eran cuatro y ahora son tres: se cayó el desenfoque.
+
+     Llegaba a 1,38 px —medido— sobre texto de 12 px en versalitas mono. A ese
+     cuerpo no se lee como profundidad de campo: se lee como que la página está
+     rota, y la etiqueta del fondo quedaba sencillamente ilegible. Escala,
+     opacidad y apilado bastan para vender la profundidad, y ninguna estropea el
+     texto. Si algún día se echa de menos, es una línea.
+
+     La opacidad mínima subió de 0,48 a 0,62 por lo mismo: para texto tan
+     pequeño, 0,48 era demasiado poco. */
+  z-index: calc(1 + var(--depth) * 8);
+  transform: translate(-50%, -50%) scale(calc(0.86 + var(--depth) * 0.2));
+  opacity: calc(0.62 + var(--depth) * 0.38);
+
+  /* SIN `transition`, a propósito.
+     Estas tres propiedades cambian en cada frame porque dependen de `--spin`,
+     así que una transición encima no tiene nada que suavizar: solo puede meter
+     retraso reapuntando su destino cada 16 ms.
+
+     Y hubo una vez en que sí hizo daño: con la transición puesta se midieron
+     nodos girando con la opacidad y el desenfoque clavados en un valor viejo
+     mientras el `z-index` —que no transiciona— sí seguía al ángulo. Quitarla lo
+     arregló. No conseguí reproducirlo después sobre un build de producción, así
+     que pudo ser un artefacto del hot reload; queda como aviso, no como
+     diagnóstico. `e2e/hero.spec.ts` vigila el síntoma de todas formas. */
+}
+
+/* Al señalar un nodo se adelanta, recupera contraste pleno y dibuja su radio al
+   centro, aunque estuviera en la mitad de atrás. Es `:hover` puro: el hero
+   sigue sin una línea de JavaScript. */
+.node:hover,
+.node:focus-within {
+  z-index: 10;
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.06);
+}
+
+/* El radio exacto hasta el centro. Sobre una elipse la distancia NO es
+   constante, así que se calcula: `hypot` da el largo y `atan2` la dirección.
+   `cqw` mide contra el escenario; un porcentaje aquí se resolvería contra la
+   etiqueta, que es quien contiene al radio. */
+.spoke {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(hypot(var(--nx), var(--ny)) * 1cqw);
+  height: 1px;
+  transform-origin: 0 50%;
+  transform: rotate(calc(atan2(var(--ny), var(--nx)) + 180deg));
+  background: linear-gradient(to right, var(--color-accent-text), transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-out-quart);
+}
+
+.node:hover .spoke,
+.node:focus-within .spoke {
+  opacity: 0.5;
+}
+
+/* Cuatro placas EXACTAMENTE iguales.
+   ---------------------------------------------------------------------------
+   Con `max-width` y alto libre, las cuatro medían cosas distintas: entre 82 y
+   161 px de ancho y entre 29 y 61 px de alto —medido en pantalla—, porque los
+   nombres van de 5 caracteres («CCaaS») a 31 («SBCs y análisis de data
+   telecom»). El doble de tamaño entre unas y otras. Cuatro piezas desiguales
+   girando no leen como un sistema, leen como un descuido, y el ojo se va a la
+   placa más grande en vez de irse al logotipo.
+
+   Ancho y alto FIJOS, con sitio reservado para dos líneas. A «CCAAS» le sobra
+   aire; ése es el precio del ritmo y es el precio correcto.
+
+   El filete es la otra mitad del arreglo. Sin él la placa es un relleno plano
+   de esquina dura recortado sobre el fondo —cuatro losas negras sobre la
+   nebulosa en oscuro, cuatro recortes blancos en claro— y se ve pegada encima.
+   Un borde propio la convierte en una pieza.
+
+   La entrada NO usa `reveal-fade`: ése termina en `transform: none`, y con
+   `both` se quedaría pegado pisando la flotación. Aquí la entrada solo toca la
+   opacidad y el `transform` queda libre para quien lo necesita. */
+.nodeInner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 186px;
+  /* Dos líneas de 12 px a 1.35 más el relleno. Va en `min-height` y no en
+     `height` para que un tercer renglón inesperado se vea en vez de cortarse. */
+  min-height: 54px;
+  padding: 8px 13px;
+  border: 1px solid var(--color-rule);
+  /* Luz desde arriba: el canto superior un punto más definido que el resto es
+     lo que le da grosor a una caja que si no se lee como un recorte plano. */
+  border-top-color: var(--color-rule-strong);
+  border-radius: var(--radius-sm);
+  /* SIN `backdrop-filter`. Llevaba `blur(8px)` y medido costaba **23 fps**: un
+     desenfoque de fondo sobre cuatro elementos que se mueven obliga a rehacer
+     el desenfoque de todo lo que tienen detrás en cada frame, y detrás hay una
+     órbita girando. Se compensa subiendo el relleno del 88 % al 93 %, que da la
+     misma separación del fondo por una centésima del coste. */
+  background: color-mix(in srgb, var(--color-bg) 93%, transparent);
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color var(--dur-base) var(--ease-out-quart),
+    background var(--dur-base) var(--ease-out-quart);
+
+  /*
+    Dos animaciones, y no se pisan: una toca `opacity` y la otra `transform`.
+
+    1. `node-in` — la entrada.
+
+    2. `node-float` — cada placa sube y baja con SU periodo y SU fase. Es lo que
+       rompe el bloque rígido: sin esto las cuatro se mueven como una sola pieza
+       y el conjunto se lee como un mecanismo. Los periodos (7 / 8,3 / 9,6 /
+       10,9 s) no son múltiplos entre sí a propósito, para que el patrón conjunto
+       tarde muchísimo en repetirse.
+
+    El encendido va aparte, en `::after`. Ver ahí por qué.
+  */
+  animation:
+    node-in 700ms var(--ease-out-expo) both,
+    node-float calc(7s + var(--i) * 1.3s) var(--ease-in-out-sine) infinite alternate;
+  animation-delay: calc(300ms + var(--i) * 90ms), calc(var(--i) * -1.7s);
 }
 
 /*
-  Cada nodo se posiciona rotando el eje --angle y empujando el hijo hacia el
-  borde. La contra-rotación en .nodeInner mantiene el texto horizontal mientras
-  el eje gira: sin ella las etiquetas darían vueltas y serían ilegibles.
+  EL ENCENDIDO. La placa se aviva justo cuando el cometa pasa por encima de ella,
+  y eso convierte el adorno en un circuito: se ve la señal llegar a un nodo,
+  encenderlo y seguir. Es el detalle que hace que el escenario parezca vivo en
+  vez de parecer cuatro cosas girando.
 
-  El reparto en la circunferencia lo hace SOLO --angle. Nada de escalonar con
-  animation-delay: la fase negativa se sumaría al ángulo inicial y los cuatro
-  nodos terminarían apilados de dos en dos. Todos giran en fase y conservan su
-  separación.
+  Va en una capa propia y no sobre el borde de la placa porque si no el destello
+  y el `:hover` se pelean por `border-color`, y las animaciones ganan a las
+  declaraciones normales: señalar una placa encendida no habría hecho nada.
+  Separados, cada uno manda en lo suyo.
+
+  --- La sincronía es una cuenta, no un ajuste ---
+
+  El cometa da 4 vueltas por cada vuelta de la órbita, así que gana 3 vueltas
+  netas por `--orbit-dur`: alcanza a cada nodo cada `--orbit-dur / 3`, y al nodo
+  de ángulo `base` lo alcanza por primera vez en `--orbit-dur · base / 3`, con
+  `base` en vueltas — que es justo lo que entrega `--base-turns`.
+
+  Se apoya en dos hechos MEDIDOS en el navegador, no supuestos: cometa y nodos
+  giran en el mismo sentido, y el trazado de la elipse arranca en el mismo 0°
+  que los ángulos de los nodos.
+
+  `--signal-lead` es el único número que se ajusta midiendo. Corrige dos cosas:
+  que la cabeza del guion va 22 unidades por delante del origen de su patrón, y
+  un residuo que NO se puede eliminar del todo — el cometa avanza a ARCO
+  constante y los nodos a ÁNGULO constante, y en una elipse de 64 × 38 eso no es
+  lo mismo: la velocidad angular del cometa varía en un factor de 1,7 a lo largo
+  de la vuelta. El desfase oscila unos ±0,3 s y este valor lo deja centrado.
+
+  Comprobado: en el instante del destello, el cometa está a 0 px del borde de su
+  placa en las cuatro. Si se toca `--orbit-dur`, la duración del cometa o el
+  `stroke-dasharray`, hay que volver a medirlo.
 */
-.node {
+.nodeInner::after {
+  content: '';
   position: absolute;
-  /* inset 15% => caja al 70% del escenario => los nodos caen justo sobre .ring. */
-  inset: 15%;
+  inset: -1px;
+  border: 1px solid var(--color-accent-text);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  --signal-lead: -0.8s;
+  animation: node-signal calc(var(--orbit-dur) / 3) linear infinite;
+  animation-delay: calc(var(--orbit-dur) * var(--base-turns) / 3 + var(--signal-lead));
+}
+
+@keyframes node-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes node-float {
+  from {
+    transform: translateY(-4px);
+  }
+  to {
+    transform: translateY(4px);
+  }
+}
+
+/* Entra de golpe y se apaga despacio, que es como llega una señal. El 4 % de
+   11,7 s son ~470 ms de caída. */
+@keyframes node-signal {
+  0% {
+    opacity: 1;
+    box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 45%, transparent);
+  }
+  4% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+}
+
+/* Al señalar o al llegar con el teclado. */
+.nodeInner:hover,
+.nodeInner:focus-visible {
+  border-color: var(--color-accent-text);
+  background: color-mix(in srgb, var(--color-bg) 96%, transparent);
+}
+
+/* El icono también se aleja. Los cuatro a la misma saturación aplanan el
+   conjunto: el del frente tiene que llegar pleno y el del fondo apagado, igual
+   que le pasa a su placa. `--depth` se hereda del nodo. */
+.nodeIcon {
   display: grid;
   place-items: center;
-  transform: rotate(var(--angle));
-  animation: orbit-spin 48s linear infinite;
-}
-
-.nodeInner {
-  position: absolute;
-  top: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  /* Cabe el nombre completo de la solución en dos líneas en vez de recortarlo:
-     "SBCs y análisis de data telecom" en una sola línea desborda el escenario. */
-  max-width: 168px;
-  padding: 8px 14px;
-  transform: translateY(-50%) rotate(calc(var(--angle) * -1));
-  background: var(--color-bg);
-  border: 1px solid var(--color-rule-strong);
-  border-radius: var(--radius-sm);
-  animation: orbit-counter-spin 48s linear infinite;
-}
-
-.nodeDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--color-accent);
   flex: none;
+  color: var(--color-accent-text);
+  opacity: calc(0.5 + var(--depth) * 0.5);
 }
 
 .nodeLabel {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.35;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--color-fg);
 }
 
-@keyframes orbit-spin {
-  to {
-    transform: rotate(calc(var(--angle) + 360deg));
-  }
-}
-
-@keyframes orbit-counter-spin {
-  to {
-    transform: translateY(-50%) rotate(calc((var(--angle) + 360deg) * -1));
-  }
-}
-
 /* --- Móvil: la órbita se convierte en lista ------------------------------- */
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .inner {
     grid-template-columns: 1fr;
     gap: 48px;
@@ -191,24 +863,38 @@
   }
 
   .stage {
+    /* Sin esto, `container-type: size` colapsaría la altura a cero: la
+       contención de tamaño ignora el contenido, y aquí ya no queda
+       `aspect-ratio` que la determine. */
+    container-type: normal;
     aspect-ratio: auto;
     max-width: none;
     display: block;
+    animation: none;
   }
 
+  /* El decorado entero se desmonta: en un teléfono no aporta nada y se ahorra
+     todo su costo de pintado. */
+  .backdrop,
   .rings {
     display: none;
   }
 
-  /* El logo NO se esconde en móvil: el brief pide la marca al centro con las
-     soluciones alrededor, y aunque la órbita se aplane a lista, la marca sigue
-     encabezándola. Solo pierde el disco de fondo, que sin anillos no separa nada. */
+  /* El logo NO se esconde: el brief pide la marca al centro con las soluciones
+     alrededor, y aunque la órbita se aplane a lista, la marca sigue
+     encabezándola. Solo pierde el disco y el halo, que sin elipse no separan. */
   .core {
     width: auto;
     aspect-ratio: auto;
     margin: 0 auto 32px;
-    background: transparent;
     --logo-size: 84px;
+  }
+
+  /* Sin elipse detrás no hay nada que ocultar, y la bruma sobre un fondo plano
+     solo sería un degradado invisible que aún así hay que pintar. */
+  .core::before,
+  .halo {
+    display: none;
   }
 
   .orbit {
@@ -216,42 +902,60 @@
     border-top: 1px solid var(--color-rule);
   }
 
+  /* Se desmonta todo lo que la órbita necesitaba: posición, profundidad y
+     apilado. Aquí son cuatro filas iguales y ninguna está "más cerca". */
   .node {
     position: static;
     display: block;
+    z-index: auto;
     transform: none;
-    animation: none;
+    opacity: 1;
+    filter: none;
     border-bottom: 1px solid var(--color-rule);
   }
 
+  .node:hover,
+  .node:focus-within {
+    transform: none;
+  }
+
+  .spoke {
+    display: none;
+  }
+
+  /* La placa se deshace: aquí son cuatro filas de una lista, separadas por
+     hairlines, y el ancho fijo que da ritmo en la órbita aquí solo estorbaría. */
+  /* La placa se deshace y con ella todo lo que la hacía vivir: sin cometa no
+     hay señal que la encienda, y una fila de lista que flota es solo una fila
+     que no se está quieta. */
   .nodeInner {
-    position: static;
     display: flex;
     width: 100%;
-    /* Se libera el tope que la órbita necesita: aquí la etiqueta ocupa la fila. */
-    max-width: none;
+    min-height: 0;
     padding: 18px 2px;
-    transform: none;
-    animation: none;
     border: 0;
     border-radius: 0;
     background: transparent;
+    backdrop-filter: none;
+    animation: node-in 700ms var(--ease-out-expo) both;
+    animation-delay: calc(300ms + var(--i) * 90ms);
+  }
+
+  .nodeInner::after {
+    display: none;
+  }
+
+  .nodeInner:hover,
+  .nodeInner:focus-visible {
+    background: transparent;
+  }
+
+  /* Aquí el icono es una fila más, no un objeto lejano. */
+  .nodeIcon {
+    opacity: 1;
   }
 
   .nodeLabel {
     font-size: 0.875rem;
-  }
-}
-
-/* La regla global de prefers-reduced-motion ya neutraliza las animaciones; aquí
-   solo se recentra la composición para que el estado congelado se vea armado y
-   no como una órbita detenida a la mitad. */
-@media (prefers-reduced-motion: reduce) {
-  .node {
-    transform: rotate(var(--angle));
-  }
-
-  .nodeInner {
-    transform: translateY(-50%) rotate(calc(var(--angle) * -1));
   }
 }

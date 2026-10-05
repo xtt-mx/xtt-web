@@ -25,6 +25,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # estar presente aquí y no solo en runtime.
 ARG NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_CHAT_ENABLED=false
+ENV NEXT_PUBLIC_CHAT_ENABLED=$NEXT_PUBLIC_CHAT_ENABLED
 RUN pnpm build
 
 # --- Runner -----------------------------------------------------------

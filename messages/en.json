@@ -24,46 +24,60 @@
     "es": "Español",
     "en": "English"
   },
+  "chat": {
+    "open": "Open the chat",
+    "close": "Close the chat",
+    "title": "Ask XTT",
+    "greeting": "Hi. I answer questions about the solutions we distribute, where we operate and how we work with channel partners. What would you like to know?",
+    "placeholder": "Type your question",
+    "send": "Send question",
+    "sending": "Typing…",
+    "contactCta": "Talk to the team",
+    "disclaimer": "AI-generated answers based on this site.",
+    "error": "I could not answer right now. Please try again in a moment.",
+    "rateLimited": "Too many messages in a row. Please wait a moment before continuing.",
+    "unavailable": "The chat is unavailable right now."
+  },
   "hero": {
-    "eyebrow": "Technology distributor",
-    "title": "Four solutions. One partner network.",
-    "subtitle": "We bring contact center and telecom technology to the partners serving Mexico, Central America, the Caribbean and Colombia.",
-    "ctaPrimary": "See our solutions",
+    "eyebrow": "CCaaS & AI Wholesaler",
+    "title": "Cloud Solutions Architecture focused on CX.",
+    "subtitle": "We bring contact center and telecom technology through our partner ecosystem across LATAM.",
+    "ctaPrimary": "Explore our solutions",
     "ctaSecondary": "Talk to the team",
-    "orbitLabel": "Solutions distributed by XTT"
+    "orbitLabel": "XTT solution Portfolio."
   },
   "about": {
     "eyebrow": "Who we are",
-    "title": "We are a distributor, not another reseller.",
+    "title": "More than a wholesaler: we're your CX architecture partner.",
     "lead": "A 100% Mexican company founded in 2018. We distribute communications and AI-as-a-service technology, and we work exclusively through partners: our business is making theirs work.",
     "body": "We never compete with our partners for the end account. We provide the catalog, the training, the technical presales and the support a partner needs to sell and deploy — without carrying the infrastructure or managing a direct relationship with every vendor.",
     "missionTitle": "Mission",
     "mission": "To be the distributor that grows its partners: bringing them dependable contact center and telecom technology, and standing with them through the sale, the deployment and the support.",
     "visionTitle": "Vision",
     "vision": "To build the strongest distribution ecosystem in the region: trained partners, first-tier vendors, and customers who evolve without friction.",
-    "foundedLabel": "Operating since"
+    "foundedLabel": "Est:"
   },
   "solutions": {
-    "eyebrow": "Our solutions",
+    "eyebrow": "Portfolio",
     "title": "What we distribute",
     "lead": "Four lines that sell on their own or together, depending on what each partner already serves.",
     "ccaas": {
       "name": "CCaaS",
       "full": "Contact Center as a Service",
-      "summary": "Cloud contact center: omnichannel, intelligent routing and analytics, with no infrastructure of your own.",
-      "detail": "Contact center platforms operated as a service. The partner sells the whole solution — voice, digital, reporting and AI-assisted agents — without standing up or maintaining a single server."
+      "summary": "Cloud contact center: connect every channel, optimize every interaction, and turn data into decisions — with no infrastructure of your own.",
+      "detail": "Contact center as a service: a complete voice, digital, reporting and AI-agent solution that can be sold and deployed without worrying about servers or infrastructure."
     },
     "sbc-telecom-data": {
       "name": "SBCs and telecom data analysis",
       "full": "Session Border Controllers and traffic analytics",
       "summary": "Secure and normalize SIP traffic, and turn CDR into decisions.",
-      "detail": "Session Border Controllers to protect the network edge, normalize signaling between carriers and resolve interoperability. On top, the analytics layer that turns call detail into insight on usage, quality and fraud."
+      "detail": "Session Border Controllers to protect the network edge, normalize signaling between carriers and resolve interoperability. On top, the analytics layer that turns call detail into insight on usage, quality and fraud. Additionally, an extra layer of AMD reaching 95% precision, giving your outbound campaigns the efficiency they require."
     },
     "messaging": {
       "name": "Messaging and digital channels",
       "full": "Messaging and digital channels",
       "summary": "WhatsApp, SMS, RCS and social in the same service flow as voice.",
-      "detail": "Digital channels wired into the contact center, not parked in a separate inbox. Includes transactional messaging, campaigns, and the APIs to connect them to the CRM the customer already runs."
+      "detail": "Digital channels, SMS, and RCS wired into the contact center, not parked in a separate inbox. Includes transactional messaging, campaigns, and the APIs to connect them to the CRM/CCaaS the customer already runs."
     },
     "sip": {
       "name": "SIP telephony",
@@ -75,7 +89,7 @@
   "presence": {
     "eyebrow": "Presence",
     "title": "Where we operate",
-    "lead": "We have presence across Mexico, Central America, the Caribbean and Colombia.",
+    "lead": "We have a presence across Mexico, Central America, the Caribbean and Colombia, connecting markets, technology and new business opportunities.",
     "regions": {
       "mexico": "Mexico",
       "centroamerica": "Central America",
@@ -96,8 +110,7 @@
       "CO": "Colombia",
       "DO": "Dominican Republic",
       "PR": "Puerto Rico",
-      "JM": "Jamaica",
-      "TT": "Trinidad and Tobago"
+      "JM": "Jamaica"
     }
   },
   "partnerLocator": {
@@ -108,7 +121,7 @@
     "filterSolution": "Solution",
     "filterAll": "All",
     "resultsCount": "{count, plural, =0 {No partners} =1 {1 partner} other {# partners}}",
-    "empty": "We have not published the partner directory yet. Write to us and we will connect you with the partner covering your country.",
+    "empty": "We have not yet published the partner directory. Write to us and we will connect you with the partner covering your country.",
     "emptyCta": "Contact XTT",
     "visitSite": "Website",
     "tier": {
@@ -120,7 +133,7 @@
   "contact": {
     "eyebrow": "Contact",
     "title": "Let's talk about your operation",
-    "lead": "Tell us what you need to solve and we answer with a concrete proposal, not a catalog.",
+    "lead": "Tell us what you need to solve and together we can build the best solution available.",
     "form": {
       "name": "Name",
       "email": "Email",
@@ -129,7 +142,7 @@
       "message": "What do you need?",
       "submit": "Send",
       "sending": "Sending…",
-      "success": "Message sent. We will get back to you within one business day.",
+      "success": "Message sent. We will get back to you.",
       "error": "We could not send your message. Try again or write to us directly at {email}.",
       "required": "This field is required",
       "invalidEmail": "Check the email format",
@@ -178,6 +191,10 @@
       "share": {
         "title": "Sharing information",
         "body": "We do not sell or share your personal information with unaffiliated third parties, except in limited situations where it is necessary to provide services or to comply with legal obligations. We ensure that any third party with access to your information meets appropriate privacy and security standards."
+      },
+      "chat": {
+        "title": "Chat assistant",
+        "body": "This site offers an assistant that answers questions about our services. Conversations are processed through an artificial intelligence provider and are retained for a maximum of 90 days, for the sole purpose of improving the content of the site and the quality of its answers. We do not request personal data through the chat: if you wish to share it, we direct you to our contact form. We recommend that you do not enter sensitive information in the chat."
       },
       "security": {
         "title": "Information security",
