@@ -7,10 +7,18 @@ allowBuilds:
   # No los usamos: Next 16 trae su propio SWC precompilado y no corremos watchers de Parcel.
   '@swc/core': false
   '@parcel/watcher': false
+  # Lo arrastra Next 16.2 como dependencia (16.3 no lo hacía). No hace falta:
+  # este sitio no usa `next/image` en ningún sitio, así que no hay ninguna
+  # imagen que optimizar en servidor.
+  sharp: false
 
-# pnpm 11 aplica una cuarentena por antigüedad a paquetes nuevos. Next 16.3.2 y su
-# toolchain son la versión que fijamos deliberadamente, así que se excluyen.
+# pnpm 11 aplica una cuarentena por antigüedad a paquetes nuevos. Estas son las
+# versiones que fijamos deliberadamente, así que se excluyen.
+#
+# Van en 16.2 y NO en la última, a propósito: el binario nativo de SWC de la
+# línea 16.3 exige glibc 2.30 y el servidor de Hostinger no llega a 2.29. Lo
+# vigila `scripts/check-swc-glibc.mjs`.
 minimumReleaseAgeExclude:
-  - 'next@16.3.2'
-  - 'eslint-config-next@16.3.2'
+  - 'next@16.2.12'
+  - 'eslint-config-next@16.2.12'
   - '@next/*'
