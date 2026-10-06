@@ -2,10 +2,58 @@
 
 Este sitio es un proceso de Node, no PHP. **No corre en hosting compartido.**
 El WordPress anterior sí —`xtt.com.mx` está hoy en hPanel de Hostinger con
-LiteSpeed— y por eso no vale el mismo plan. Hace falta un VPS.
+LiteSpeed— y por eso no vale el mismo plan.
 
-La infraestructura ya está escrita: `Dockerfile`, `docker-compose.yml` y
-`Caddyfile`, con TLS automático de Let's Encrypt.
+---
+
+## Dónde está hoy, y por qué no está en Hostinger
+
+**En Vercel**, con contraseña, mientras la copy siga sin aprobar.
+
+No es el plan original. Se probaron las dos vías de Hostinger y las dos se
+cerraron:
+
+| Vía                    | Qué pasó                                                                                                                                                        |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Hosting gestionado** | El servidor no tiene `GLIBC_2.29`, así que el compilador nativo de Next 16 no carga. Turbopack **no** tiene respaldo en WebAssembly. Saldría a base de parches. |
+| **VPS**                | La cuenta no tiene ninguno —una sola suscripción, Business Web Hosting— y crear uno es una compra.                                                              |
+
+El plan de VPS sigue escrito y vigente (las cuatro secciones numeradas de abajo, más
+`Dockerfile`, `docker-compose.yml`, `Caddyfile` y
+`.github/workflows/deploy.yml`): el día que haya un servidor, funciona sin
+cambios. Lo que falta es el servidor.
+
+### Variables en Vercel
+
+| Variable                                         | Valor                             |
+| ------------------------------------------------ | --------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                           | la URL que asigne Vercel          |
+| `PREVIEW_USER`                                   | el usuario de la previsualización |
+| `PREVIEW_PASSWORD`                               | **en plano**, no el hash de Caddy |
+| `N8N_CONTACT_WEBHOOK_URL` · `N8N_WEBHOOK_SECRET` | para el formulario de contacto    |
+
+`NEXT_PUBLIC_SITE_URL` se incrusta en el bundle durante el build: cambiarla
+obliga a **redesplegar**, no basta con guardarla.
+
+### La contraseña la pone la aplicación, no el hosting
+
+El plan gratuito de Vercel no ofrece protección por contraseña, así que la
+puerta vive en `src/proxy.ts`. Se monta sola cuando existen `PREVIEW_USER` y
+`PREVIEW_PASSWORD`, y en producción, donde no se definen, el sitio queda
+abierto. **No hay bandera que acordarse de apagar.**
+
+Dos consecuencias que conviene tener presentes:
+
+- `/api/*` y los estáticos quedan fuera —el matcher del proxy los excluye, y
+  cambiarlo rompe cuatro rutas; está documentado en `proxy.ts`—. En producción
+  son públicos de todas formas.
+- La contraseña va en plano porque el runtime edge no puede verificar un hash
+  de bcrypt. No debe ser la misma que la de Caddy.
+
+La suite entera de Playwright corre **con la puerta puesta**, y
+`e2e/preview-gate.spec.ts` falla si alguien la abre sin querer. Comprobado al
+revés: apuntando la suite a un servidor sin las variables, 8 de sus 10 tests
+caen.
 
 ---
 
