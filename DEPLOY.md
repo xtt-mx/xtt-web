@@ -84,7 +84,88 @@ una previsualización sin él**: las páginas salen como `index, follow` y un
 
 ---
 
-## 2 · Apuntar el dominio
+## 2 · Despliegue continuo desde GitHub
+
+Un VPS no trae la integración con GitHub del panel de _Websites_: ahí no hay
+botón de «conectar repositorio». El enlace lo monta
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), que se dispara
+cuando **CI termina en verde**, no cuando empujas:
+
+```
+push a main → lint · typecheck · build → Playwright → deploy (ssh al VPS)
+                                   └── en rojo: no se despliega nada
+```
+
+Eso es mejor que el panel gestionado, que publica lo que empujaste sin mirar si
+pasa los tests.
+
+El workflow solo abre el SSH; el trabajo lo hace
+[`scripts/deploy-remote.sh`](scripts/deploy-remote.sh), que **viaja por stdin**
+en vez de ejecutarse desde el clon del servidor. Así el script que corre es el
+de la revisión validada, no el que dejó el despliegue anterior.
+
+Tres cosas que hace y conviene saber:
+
+- Hace `reset --hard` **al SHA que CI validó**, no a la punta de `main`. Entre
+  que CI acaba y el deploy arranca pueden haber entrado commits sin probar.
+- Usa `--wait`, que se apoya en el `HEALTHCHECK` del `Dockerfile`. Sin él,
+  `up -d` da éxito en cuanto el contenedor arranca, aunque se caiga enseguida.
+- Si el arranque falla, **vuelve solo** a la revisión anterior y la levanta.
+
+### Preparar el servidor (una vez)
+
+**Son dos claves distintas, y confundirlas cuesta un rato.** Una para entrar al
+VPS y otra para que el VPS pueda leer el repo, que es privado.
+
+| Clave                         | Parte privada           | Parte pública                         |
+| ----------------------------- | ----------------------- | ------------------------------------- |
+| **A** · Actions → VPS         | Secret `DEPLOY_SSH_KEY` | `~/.ssh/authorized_keys` del VPS      |
+| **B** · VPS → GitHub (clonar) | se queda en el VPS      | Repo → Settings → **Deploy keys**, RO |
+
+En el VPS, con la clave B ya dada de alta:
+
+```bash
+sudo mkdir -p /srv && sudo chown "$USER" /srv
+git clone git@github.com:xtt-mx/xtt-web.git /srv/xtt-web
+cd /srv/xtt-web && cp .env.example .env    # y rellenar
+```
+
+El `.env` es quien decide el entorno, vía `COMPOSE_FILE`. El workflow corre
+`docker compose up` a secas en los dos casos.
+
+> El usuario del despliegue necesita poder hablar con Docker. Si no es `root`:
+> `sudo usermod -aG docker "$USER"` y volver a entrar.
+
+### Secretos y variables del repo
+
+Settings → Environments → **`produccion`**:
+
+| Nombre               | Tipo     | Qué es                                           |
+| -------------------- | -------- | ------------------------------------------------ |
+| `DEPLOY_HOST`        | secret   | `srv1827163.hstgr.cloud`                         |
+| `DEPLOY_USER`        | secret   | el usuario del VPS                               |
+| `DEPLOY_PORT`        | secret   | solo si no es el 22                              |
+| `DEPLOY_SSH_KEY`     | secret   | clave **A**, privada, completa con sus cabeceras |
+| `DEPLOY_KNOWN_HOSTS` | secret   | `ssh-keyscan -t ed25519 srv1827163.hstgr.cloud`  |
+| `DEPLOY_URL`         | variable | `https://srv1827163.hstgr.cloud`                 |
+
+`DEPLOY_KNOWN_HOSTS` no es opcional: la alternativa es
+`StrictHostKeyChecking=no`, que convierte un secuestro de DNS en un despliegue
+—y una clave— entregados al atacante.
+
+El entorno `produccion` también es donde se le puede exigir **aprobación
+manual** antes de cada despliegue, sin tocar el workflow.
+
+> ⚠️ **Hay un Traefik ocupando los puertos 80 y 443 de ese VPS.** Está
+> verificado: responde con su certificado por omisión. Caddy no va a poder
+> escuchar ahí mientras siga levantado, así que el primer despliegue exige
+> decidir una de dos — retirar Traefik, o publicar el sitio detrás de él y
+> quitar el servicio `caddy` del compose. **No es algo que el workflow pueda
+> resolver**; se decide al entrar al servidor.
+
+---
+
+## 3 · Apuntar el dominio
 
 1. **24-48 h antes**, bajar el TTL del registro `A` a 300 s. Sin eso, una marcha
    atrás tarda horas.
@@ -110,7 +191,7 @@ red de seguridad durante las primeras semanas.
 
 ---
 
-## 3 · Comprobar
+## 4 · Comprobar
 
 ```bash
 curl -sI https://xtt.com.mx | head -1          # 200 y HTTPS
