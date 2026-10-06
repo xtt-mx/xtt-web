@@ -28,10 +28,11 @@ import { join } from 'node:path';
 /**
  * El techo del servidor.
  *
- * Está razonado, no elegido: el registro del build dice
- * «version `GLIBC_2.29' not found», y las versiones de glibc son acumulativas,
- * así que el servidor tiene 2.28 como máximo. Lo único DEMOSTRADO que funciona
- * allí es 2.17 (Next 16.2); si algún día vuelve a fallar por glibc, baja esto.
+ * Ya no es una deducción: `scripts/report-build-env.mjs` lo imprimió desde el
+ * propio servidor de Hostinger — `ldd (GNU libc) 2.28`. Antes se infería del
+ * error «version `GLIBC_2.29' not found» y daba el mismo número, pero ahora está
+ * medido. Si Hostinger actualiza el sistema, ese script lo dirá en el siguiente
+ * build y este techo se puede subir citándolo.
  */
 const GLIBC_MAXIMO = [2, 28];
 
