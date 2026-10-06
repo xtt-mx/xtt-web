@@ -32,6 +32,27 @@ const nextConfig: NextConfig = {
 
   experimental: {
     optimizePackageImports: ['lucide-react'],
+
+    /**
+     * Topes de paralelismo, y solo donde hacen falta.
+     *
+     * El hosting gestionado de Hostinger cortaba el build a los 15 minutos sin
+     * dejar ni un error. En local el mismo build tarda 15 SEGUNDOS con 16
+     * núcleos, y esa diferencia de 60× no la explica tener menos CPU: huele al
+     * problema clásico de contenedores, donde el proceso ve los núcleos del
+     * anfitrión y lanza docenas de workers sobre una cuota de uno.
+     *
+     * Van detrás de una variable en vez de fijos para no castigar los builds de
+     * local y de CI, que sí tienen máquina. `scripts/report-build-env.mjs`
+     * imprime los límites reales para que esto deje de ser una conjetura.
+     */
+    ...(process.env.NEXT_BUILD_CPUS
+      ? {
+          cpus: Number(process.env.NEXT_BUILD_CPUS),
+          workerThreads: false,
+          memoryBasedWorkersCount: false,
+        }
+      : {}),
   },
 
   // 301 desde las URLs del WordPress anterior. Ver src/config/redirects.ts.
