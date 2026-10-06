@@ -1,75 +1,96 @@
 # Desplegar
 
-Este sitio es un proceso de Node, no PHP. **No corre en hosting compartido.**
-El WordPress anterior sí —`xtt.com.mx` está hoy en hPanel de Hostinger con
-LiteSpeed— y por eso no vale el mismo plan.
+Este sitio es un proceso de Node, no PHP, así que no vale el mismo alojamiento
+que el WordPress anterior —`xtt.com.mx` sigue hoy en el hosting compartido de
+Hostinger, con LiteSpeed—. Sí vale el **mismo plan**: el Business incluye una
+sección de aplicaciones Node.js, y ahí es donde vive.
 
 ---
 
-## Dónde está hoy, y por qué no está en Hostinger
+## Dónde vive el sitio
 
-**En Vercel**, en <https://xtt-web.vercel.app>, y **abierto**.
+| Entorno        | Dónde                                                                                  | Para qué                                                             |
+| -------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **Producción** | Hostinger gestionado, sección **Websites** — `coral-hedgehog-358900.hostingersite.com` | el destino final; es lo que XTT paga, hasta 2030                     |
+| **Pruebas**    | Vercel — <https://xtt-web.vercel.app>                                                  | ver un cambio antes de mandarlo a Hostinger, cuyo build es más lento |
+| **VPS**        | aparcado                                                                               | ver la sección 2                                                     |
 
-Sin contraseña a propósito, por decisión del cliente: pedir credenciales para
-ver una landing page estorba más de lo que protege. Lo que sí protege es
-`robots.ts`, que devuelve `Disallow: /` en cualquier host que no sea
-`xtt.com.mx` —decide por la cabecera `Host`, no por una variable que alguien
-pueda olvidar—, así que esta copia no compite con el sitio real en Google.
+Vercel **no puede** ser el destino final: su plan gratuito es solo para uso no
+comercial, y este es el sitio institucional de una empresa. Como entorno interno
+no hay problema, porque el dominio nunca apunta ahí.
 
-> Lo que queda expuesto, y conviene tenerlo presente mientras dure: el teléfono
-> que muestra el sitio es el viejo, hay siete textos cuya versión el cliente
-> todavía no ha elegido, y el Partner Locator está en su estado vacío. Quien
-> llegue por el enlace lo verá así.
+### Por qué falló Hostinger dos veces, y qué lo arregla
 
-No es el plan original. Se probaron las dos vías de Hostinger y las dos se
-cerraron:
+El build moría así, y el error no menciona la causa hasta el final:
 
-| Vía                    | Qué pasó                                                                                                                                                        |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Hosting gestionado** | El servidor no tiene `GLIBC_2.29`, así que el compilador nativo de Next 16 no carga. Turbopack **no** tiene respaldo en WebAssembly. Saldría a base de parches. |
-| **VPS**                | La cuenta no tiene ninguno —una sola suscripción, Business Web Hosting— y crear uno es una compra.                                                              |
+```
+⚠ @next/swc-linux-x64-gnu: /lib64/libm.so.6: version `GLIBC_2.29' not found
+⨯ Failed to load next.config.ts
+▲ Next.js 16.3.2 (Turbopack)
+```
 
-El plan de VPS sigue escrito y vigente —las cuatro secciones numeradas de abajo,
-`Dockerfile`, `docker-compose.yml`, `Caddyfile`, y los dos archivos de la rama
-`parked/despliegue-vps`—: el día que haya un servidor, funciona sin cambios. Lo
-que falta es el servidor.
+La causa, **medida** descargando los binarios y leyendo sus símbolos:
+
+| Next                                 | glibc que exige | Cabe en el servidor |
+| ------------------------------------ | --------------- | ------------------- |
+| 16.3.0 · 16.3.1 · 16.3.2 · 16.3.8    | **2.30**        | **no**              |
+| 16.2.12 · 16.1.7 · 16.0.11 · 15.5.27 | 2.17            | sí                  |
+
+**Solo la línea 16.3 subió el requisito**, así que ningún parche dentro de 16.3
+sirve. De ahí que `next` esté fijado en **16.2.12** y sin `^`: un caret dejaría
+que pnpm resolviera 16.3 y el despliegue volvería a romperse con un síntoma que
+no se parece a la causa.
+
+Bajar a 16.2 no obliga a tocar código. `proxy.ts` se introdujo en **Next 16.0.0**,
+así que `src/proxy.ts` sigue igual; bajar a 15 habría obligado a renombrarlo.
+
+`scripts/check-swc-glibc.mjs` lo vigila desde CI. Mide el binario y no la
+versión, para que siga valiendo cuando salga Next 17 sin mantener una lista.
+
+> Turbopack **no** tiene respaldo en WebAssembly, que es la otra mitad de por qué
+> esto no se podía parchear: sin binario nativo no hay build.
 
 ### Cómo se despliega
 
-Vercel está conectado al repo, así que **un push a `main` despliega**. No hay
-workflow que mantener.
+Un push a `main` construye en los dos sitios: Hostinger tiene el repo conectado
+por Git, y Vercel también.
 
-Dos cosas que conviene saber:
+Ninguno de los dos **espera a que CI pase**. Si llega a molestar, en Vercel se
+apaga el automático y se dispara desde Actions con un `VERCEL_TOKEN`.
 
-- La integración nativa de Git **no espera a que CI pase**. Si eso llega a
-  molestar, se apaga el despliegue automático en Vercel y se dispara desde
-  Actions con un `VERCEL_TOKEN`, que recupera la condición de «solo si está en
-  verde» y sigue siendo gratis.
-- Esto **no funcionaba mientras el repo era privado**: el plan Hobby no conecta
-  repositorios privados de una organización. Se resolvió haciéndolo público, que
-  es también la razón por la que este archivo no debe ganar secretos.
+El repo es **público**, y tuvo que serlo: el plan Hobby de Vercel no conecta
+repositorios privados de una organización. Es también la razón por la que este
+archivo no debe ganar secretos.
 
-### Variables en Vercel
+### Variables de entorno
 
-| Variable                                         | Valor                          |
-| ------------------------------------------------ | ------------------------------ |
-| `NEXT_PUBLIC_SITE_URL`                           | la URL que asigne Vercel       |
-| `N8N_CONTACT_WEBHOOK_URL` · `N8N_WEBHOOK_SECRET` | para el formulario de contacto |
+Las mismas cinco en los dos entornos:
 
-`NEXT_PUBLIC_SITE_URL` se incrusta en el bundle durante el build: cambiarla
-obliga a **redesplegar**, no basta con guardarla.
+| Variable                   | Qué es                                          |
+| -------------------------- | ----------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`     | la URL del entorno                              |
+| `NEXT_PUBLIC_CHAT_ENABLED` | monta el widget del chat y la sección del aviso |
+| `N8N_CONTACT_WEBHOOK_URL`  | el formulario de contacto                       |
+| `N8N_CHAT_WEBHOOK_URL`     | el asistente                                    |
+| `N8N_WEBHOOK_SECRET`       | compartido por los dos                          |
+
+> ⚠️ `NEXT_OUTPUT_STANDALONE` **no debe existir en Hostinger.** Solo lo pone el
+> `Dockerfile`. Con `standalone` encendido allí el sitio se construye pero se
+> sirve sin estáticos. Ver el comentario del `output` en `next.config.ts`.
+
+Las `NEXT_PUBLIC_*` se incrustan en el bundle durante el build: cambiarlas
+obliga a **reconstruir**, no basta con guardarlas.
 
 ---
 
 ## Lo que hace falta
 
-| Qué                 | Dónde                                                                       |
-| ------------------- | --------------------------------------------------------------------------- |
-| VPS con Docker      | Hostinger KVM 1 basta (1 vCPU, 4 GB), plantilla **Ubuntu 24.04 con Docker** |
-| Clave SSH           | `ssh-keygen -t ed25519`; la pública se sube al crear el VPS                 |
-| Deploy key del repo | El repo es privado; el VPS necesita leerlo                                  |
-| Acceso al DNS       | **No está en Hostinger.** Ver abajo                                         |
-| Secretos de n8n     | `N8N_CONTACT_WEBHOOK_URL`, `N8N_CHAT_WEBHOOK_URL`, `N8N_WEBHOOK_SECRET`     |
+| Qué             | Dónde                                                                       |
+| --------------- | --------------------------------------------------------------------------- |
+| VPS con Docker  | Hostinger KVM 1 basta (1 vCPU, 4 GB), plantilla **Ubuntu 24.04 con Docker** |
+| Clave SSH       | `ssh-keygen -t ed25519`; la pública se sube al crear el VPS                 |
+| Acceso al DNS   | **No está en Hostinger.** Ver abajo                                         |
+| Secretos de n8n | `N8N_CONTACT_WEBHOOK_URL`, `N8N_CHAT_WEBHOOK_URL`, `N8N_WEBHOOK_SECRET`     |
 
 ### Dónde vive cada pieza
 
@@ -224,6 +245,16 @@ manual** antes de cada despliegue, sin tocar el workflow.
 ---
 
 ## 3 · Apuntar el dominio
+
+> ⚠️ **Esta sección está escrita para el VPS y hay que revisarla.** El destino es
+> ahora el hosting gestionado, y queda algo por confirmar en hPanel: `xtt.com.mx`
+> y el sitio Node están en **la misma cuenta** (`u313471813`), aunque no en la
+> misma IP —el apex va a `191.101.79.61` y el sitio Node sale por el CDN de
+> Hostinger (`147.79.72.235`)—. Si hPanel permite reasignar el dominio del
+> WordPress al sitio Node, **el corte no necesitaría tocar el DNS de Google**,
+> que es justo el acceso que hoy nadie tiene. Los pasos de abajo siguen siendo
+> válidos como plan B, cambiando los registros del VPS por los que pida
+> Hostinger.
 
 1. **24-48 h antes**, bajar el TTL del registro `A` a 300 s. Sin eso, una marcha
    atrás tarda horas.

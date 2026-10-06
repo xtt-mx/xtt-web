@@ -35,6 +35,13 @@ jobs:
       - name: Instalar dependencias
         run: pnpm install --frozen-lockfile
 
+      # El build de Hostinger corre sobre una glibc que no llega a 2.29, y el SWC
+      # de Next 16.3 exige 2.30. Esto lo caza aquí en vez de en el despliegue,
+      # donde el error no menciona la glibc hasta el final. Mide el binario, que
+      # en `ubuntu-latest` ya está instalado: no descarga nada.
+      - name: Comprobar que el SWC cabe en el servidor
+        run: pnpm check:swc
+
       - name: Formato
         run: pnpm format:check
 
