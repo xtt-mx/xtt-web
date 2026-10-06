@@ -2,20 +2,6 @@ import { defineConfig, devices } from '@playwright/test';
 
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
 
-/**
- * La suite corre con la puerta de previsualización PUESTA, no quitada.
- *
- * Es la condición en la que vive el sitio hoy —desplegado y con contraseña— y la
- * única forma de que un refactor de `src/proxy.ts` que abra la puerta en silencio
- * se note: lo caza `preview-gate.spec.ts`. Si en cambio la cierra de más, fallan
- * todas las demás, que es un grito en vez de un susurro.
- *
- * El resto de los specs no saben que existe: Playwright responde al 401 con estas
- * credenciales por su cuenta.
- */
-const PREVIEW_USER = 'xtt';
-const PREVIEW_PASSWORD = 'suite-de-pruebas';
-
 export default defineConfig({
   testDir: './e2e',
   outputDir: './e2e/.results',
@@ -29,7 +15,6 @@ export default defineConfig({
 
   use: {
     baseURL: BASE_URL,
-    httpCredentials: { username: PREVIEW_USER, password: PREVIEW_PASSWORD },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -64,10 +49,6 @@ export default defineConfig({
        * cuenta con ella.
        */
       NEXT_PUBLIC_CHAT_ENABLED: 'true',
-
-      // Enciende la puerta de `src/proxy.ts`. Ver el comentario de arriba.
-      PREVIEW_USER,
-      PREVIEW_PASSWORD,
     },
   },
 });

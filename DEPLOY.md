@@ -8,7 +8,18 @@ LiteSpeed— y por eso no vale el mismo plan.
 
 ## Dónde está hoy, y por qué no está en Hostinger
 
-**En Vercel**, con contraseña, mientras la copy siga sin aprobar.
+**En Vercel**, en <https://xtt-web.vercel.app>, y **abierto**.
+
+Sin contraseña a propósito, por decisión del cliente: pedir credenciales para
+ver una landing page estorba más de lo que protege. Lo que sí protege es
+`robots.ts`, que devuelve `Disallow: /` en cualquier host que no sea
+`xtt.com.mx` —decide por la cabecera `Host`, no por una variable que alguien
+pueda olvidar—, así que esta copia no compite con el sitio real en Google.
+
+> Lo que queda expuesto, y conviene tenerlo presente mientras dure: el teléfono
+> que muestra el sitio es el viejo, hay siete textos cuya versión el cliente
+> todavía no ha elegido, y el Partner Locator está en su estado vacío. Quien
+> llegue por el enlace lo verá así.
 
 No es el plan original. Se probaron las dos vías de Hostinger y las dos se
 cerraron:
@@ -40,35 +51,13 @@ Dos cosas que conviene saber:
 
 ### Variables en Vercel
 
-| Variable                                         | Valor                             |
-| ------------------------------------------------ | --------------------------------- |
-| `NEXT_PUBLIC_SITE_URL`                           | la URL que asigne Vercel          |
-| `PREVIEW_USER`                                   | el usuario de la previsualización |
-| `PREVIEW_PASSWORD`                               | **en plano**, no el hash de Caddy |
-| `N8N_CONTACT_WEBHOOK_URL` · `N8N_WEBHOOK_SECRET` | para el formulario de contacto    |
+| Variable                                         | Valor                          |
+| ------------------------------------------------ | ------------------------------ |
+| `NEXT_PUBLIC_SITE_URL`                           | la URL que asigne Vercel       |
+| `N8N_CONTACT_WEBHOOK_URL` · `N8N_WEBHOOK_SECRET` | para el formulario de contacto |
 
 `NEXT_PUBLIC_SITE_URL` se incrusta en el bundle durante el build: cambiarla
 obliga a **redesplegar**, no basta con guardarla.
-
-### La contraseña la pone la aplicación, no el hosting
-
-El plan gratuito de Vercel no ofrece protección por contraseña, así que la
-puerta vive en `src/proxy.ts`. Se monta sola cuando existen `PREVIEW_USER` y
-`PREVIEW_PASSWORD`, y en producción, donde no se definen, el sitio queda
-abierto. **No hay bandera que acordarse de apagar.**
-
-Dos consecuencias que conviene tener presentes:
-
-- `/api/*` y los estáticos quedan fuera —el matcher del proxy los excluye, y
-  cambiarlo rompe cuatro rutas; está documentado en `proxy.ts`—. En producción
-  son públicos de todas formas.
-- La contraseña va en plano porque el runtime edge no puede verificar un hash
-  de bcrypt. No debe ser la misma que la de Caddy.
-
-La suite entera de Playwright corre **con la puerta puesta**, y
-`e2e/preview-gate.spec.ts` falla si alguien la abre sin querer. Comprobado al
-revés: apuntando la suite a un servidor sin las variables, 8 de sus 10 tests
-caen.
 
 ---
 
