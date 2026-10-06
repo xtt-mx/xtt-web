@@ -18,10 +18,25 @@ cerraron:
 | **Hosting gestionado** | El servidor no tiene `GLIBC_2.29`, así que el compilador nativo de Next 16 no carga. Turbopack **no** tiene respaldo en WebAssembly. Saldría a base de parches. |
 | **VPS**                | La cuenta no tiene ninguno —una sola suscripción, Business Web Hosting— y crear uno es una compra.                                                              |
 
-El plan de VPS sigue escrito y vigente (las cuatro secciones numeradas de abajo, más
-`Dockerfile`, `docker-compose.yml`, `Caddyfile` y
-`.github/workflows/deploy.yml`): el día que haya un servidor, funciona sin
-cambios. Lo que falta es el servidor.
+El plan de VPS sigue escrito y vigente —las cuatro secciones numeradas de abajo,
+`Dockerfile`, `docker-compose.yml`, `Caddyfile`, y los dos archivos de la rama
+`parked/despliegue-vps`—: el día que haya un servidor, funciona sin cambios. Lo
+que falta es el servidor.
+
+### Cómo se despliega
+
+Vercel está conectado al repo, así que **un push a `main` despliega**. No hay
+workflow que mantener.
+
+Dos cosas que conviene saber:
+
+- La integración nativa de Git **no espera a que CI pase**. Si eso llega a
+  molestar, se apaga el despliegue automático en Vercel y se dispara desde
+  Actions con un `VERCEL_TOKEN`, que recupera la condición de «solo si está en
+  verde» y sigue siendo gratis.
+- Esto **no funcionaba mientras el repo era privado**: el plan Hobby no conecta
+  repositorios privados de una organización. Se resolvió haciéndolo público, que
+  es también la razón por la que este archivo no debe ganar secretos.
 
 ### Variables en Vercel
 
@@ -132,7 +147,13 @@ una previsualización sin él**: las páginas salen como `index, follow` y un
 
 ---
 
-## 2 · Despliegue continuo desde GitHub
+## 2 · Despliegue continuo en un VPS (aparcado)
+
+> Los dos archivos de esta sección —`.github/workflows/deploy.yml` y
+> `scripts/deploy-remote.sh`— **no están en `main`**. Viven en la rama
+> `parked/despliegue-vps`, porque un workflow que apunta a un servidor que no
+> existe solo sirve para dejar `main` en rojo en cada push. Están escritos y
+> probados; el día que haya VPS se recuperan con un `git cherry-pick`.
 
 Un VPS no trae la integración con GitHub del panel de _Websites_: ahí no hay
 botón de «conectar repositorio». El enlace lo monta

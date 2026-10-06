@@ -27,3 +27,5 @@ Thumbs.db
 
 # assets de marca en crudo (pesados, y el PDF no debe ir a un repo que algún día se abra)
 brand-source/
+
+.vercel
