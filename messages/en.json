@@ -60,7 +60,7 @@
   "solutions": {
     "eyebrow": "Portfolio",
     "title": "What we distribute",
-    "lead": "Four lines that sell on their own or together, depending on what each partner already serves.",
+    "lead": "Four solution lines to expand your offering, unlock new opportunities, and grow with every customer.",
     "ccaas": {
       "name": "CCaaS",
       "full": "Contact Center as a Service",
@@ -89,12 +89,12 @@
   "presence": {
     "eyebrow": "Presence",
     "title": "Where we operate",
-    "lead": "We have a presence across Mexico, Central America, the Caribbean and Colombia, connecting markets, technology and new business opportunities.",
+    "lead": "We have a presence across Mexico, Central America, the Caribbean and South America, connecting markets, technology and new business opportunities.",
     "regions": {
       "mexico": "Mexico",
       "centroamerica": "Central America",
       "caribe": "Caribbean",
-      "colombia": "Colombia"
+      "sudamerica": "South America"
     },
     "countriesLabel": "Countries",
     "regionsLabel": "Regions",
@@ -116,7 +116,7 @@
   "partnerLocator": {
     "eyebrow": "Partner Locator",
     "title": "Find a partner",
-    "lead": "Our partners deploy and support locally. Filter by country or solution to find the right one.",
+    "lead": "Find the right partner for your project. Our partners deploy and provide local support. Filter by country or solution and connect with the right one.",
     "filterCountry": "Country",
     "filterSolution": "Solution",
     "filterAll": "All",

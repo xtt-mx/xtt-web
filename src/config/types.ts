@@ -16,7 +16,7 @@ export type CountryCode =
   'MX' | 'GT' | 'BZ' | 'SV' | 'HN' | 'NI' | 'CR' | 'PA' | 'CO' | 'DO' | 'PR' | 'JM';
 
 /** Agrupación comercial que usa XTT para hablar de su territorio. */
-export type RegionId = 'mexico' | 'centroamerica' | 'caribe' | 'colombia';
+export type RegionId = 'mexico' | 'centroamerica' | 'caribe' | 'sudamerica';
 
 export interface Solution {
   readonly id: SolutionId;

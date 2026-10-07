@@ -80,8 +80,20 @@ test.describe('Partner Locator', () => {
     await expect(presence.getByText(es.presence.countries.GT)).toBeVisible();
     await expect(presence.getByText(es.presence.countries.DO)).toBeVisible();
 
-    // "México" aparece una vez, como región; repetirlo como país no informa nada.
+    // "México" aparece una vez: la región se llama igual que el país, así que
+    // repetirlo debajo no informaría nada.
     await expect(presence.getByText('México', { exact: true })).toHaveCount(1);
-    await expect(presence.getByText('Colombia', { exact: true })).toHaveCount(1);
+
+    // «Sudamérica» es el caso contrario, y es el que de verdad hay que vigilar:
+    // la región NO se llama como su país, así que Colombia tiene que aparecer
+    // debajo. Sin eso el sitio nombraría un continente sin decir dónde opera.
+    // `exact` porque el párrafo de entrada también dice «Sudamérica», y sin él
+    // el locator caza dos elementos.
+    await expect(
+      presence.getByText(es.presence.regions.sudamerica, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      presence.getByText(es.presence.countries.CO, { exact: true }),
+    ).toHaveCount(1);
   });
 });
