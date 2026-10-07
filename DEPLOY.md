@@ -246,6 +246,37 @@ manual** antes de cada despliegue, sin tocar el workflow.
 
 ## 3 · Apuntar el dominio
 
+> 🚨 **Lo primero que hay que comprobar tras el corte es `robots.txt`.**
+>
+> El CDN de Hostinger **inyecta su propio `robots.txt`** en los dominios
+> `*.hostingersite.com`, tapando el de la aplicación. Verificado: en
+> `coral-hedgehog-358900.hostingersite.com` se sirve
+>
+> ```
+> User-agent: Googlebot
+> Disallow: /
+>
+> User-agent: *
+> Allow: /
+> ```
+>
+> que no es lo que devuelve `src/app/robots.ts` en ninguna de sus dos ramas. Se
+> reconoce porque llega sin `etag` y con cabecera `x-hcdn-request-id`;
+> `sitemap.xml`, en cambio, sí es el de la aplicación.
+>
+> **Si esa inyección sobrevive al dominio propio, Google se queda fuera del sitio
+> real.** Es el peor desenlace posible de este proyecto y no se notaría durante
+> semanas.
+>
+> Lo normal es que no sobreviva —su razón de ser es que no se indexen los
+> subdominios temporales, y otros hostings se comportan igual: WP Engine solo
+> respeta el archivo del proyecto en los entornos con dominio propio—, pero eso
+> es una analogía, no una garantía. **Se comprueba el mismo día**, y si sigue
+> inyectado, el corte se revierte hasta resolverlo con el soporte de Hostinger.
+>
+> Mientras dure, la consecuencia menor es que la copia de pruebas está abierta a
+> los buscadores que no son Google. Nadie la enlaza, así que el riesgo es bajo.
+
 > ⚠️ **Esta sección está escrita para el VPS y hay que revisarla.** El destino es
 > ahora el hosting gestionado, y queda algo por confirmar en hPanel: `xtt.com.mx`
 > y el sitio Node están en **la misma cuenta** (`u313471813`), aunque no en la
