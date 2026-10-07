@@ -8,9 +8,9 @@ import styles from './PresenceRegions.module.css';
 /**
  * Territorio comercial, agrupado por región.
  *
- * Las cuatro regiones tienen tamaños muy distintos —México y Colombia son un
- * país; Centroamérica son siete— así que se listan como filas y no como
- * tarjetas: un grid de cuatro cajas iguales daría a entender que pesan lo mismo.
+ * Las cuatro regiones tienen tamaños muy distintos —México es un país;
+ * Centroamérica son siete— así que se listan como filas y no como tarjetas: un
+ * grid de cuatro cajas iguales daría a entender que pesan lo mismo.
  */
 export const PresenceRegions = async () => {
   const t = await getTranslations('presence');
@@ -32,9 +32,17 @@ export const PresenceRegions = async () => {
                 {t(`regions.${region.id}`)}
               </span>
 
-              {/* México y Colombia son región de un solo país: su nombre ya es
-                  el del país, y listarlo otra vez no agrega información. */}
-              {region.countries.length > 1 && (
+              {/* Se listan los países salvo cuando el nombre de la región YA ES
+                  el del país —México—, donde repetirlo no agrega nada.
+
+                  Se compara el texto y no el número de países, y la diferencia
+                  importa desde que el cliente renombró «Colombia» a
+                  «Sudamérica»: esa región sigue conteniendo un solo país, así
+                  que contar la dejaría sin lista y el sitio nombraría un
+                  continente sin decir dónde opera de verdad. */}
+              {region.countries.some(
+                (code) => tCountry(code) !== t(`regions.${region.id}`),
+              ) && (
                 <ul className={styles.countries}>
                   {region.countries.map((code) => (
                     <li key={code} className={cn('mono', styles.country)}>
