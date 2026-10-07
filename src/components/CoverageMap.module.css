@@ -1,0 +1,116 @@
+.wrap {
+  margin: 0 0 40px;
+}
+
+/* 620 px y no el ancho completo: el territorio es más alto que ancho y a página
+   completa el mapa empujaría los filtros fuera de la primera pantalla, que es
+   justo lo que la gente viene a usar. */
+.map {
+  display: block;
+  width: 100%;
+  max-width: 620px;
+  height: auto;
+  margin-inline: auto;
+}
+
+/* Los vecinos existen para dar forma, no para mirarse: sin ellos los doce países
+   flotan en el vacío y cuesta reconocer la región. Van en tierra neutra y sin
+   borde, para que no compitan con el territorio. */
+.context path {
+  fill: var(--color-map-land);
+}
+
+/* El acercamiento al país elegido.
+   `transform-box: view-box` y origen en 0 0 para que la transformación use el
+   mismo sistema de coordenadas que calculó el servidor; con el origen al 50 %
+   que trae CSS por defecto, el país aterrizaría descentrado.
+   La transición no necesita salvaguarda para «reducir movimiento»: la regla
+   global de `globals.css` congela todas las transiciones del sitio. */
+.zoom {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transition: transform var(--dur-slow) var(--ease-out-quart);
+}
+
+.vignette {
+  fill: url(#xtt-map-vignette);
+  /* Está encima de los vecinos: sin esto se comería sus clics. Los países del
+     territorio se dibujan DESPUÉS, así que a ellos no les afecta. */
+  pointer-events: none;
+}
+
+.vignetteInner {
+  stop-color: var(--color-bg);
+  stop-opacity: 0;
+}
+
+.vignetteOuter {
+  stop-color: var(--color-bg);
+  stop-opacity: 1;
+}
+
+.country {
+  fill: var(--color-map-covered);
+  /* Sin esto el filete engorda con el acercamiento y a 6× el país se ve
+     perfilado con un rotulador. */
+  vector-effect: non-scaling-stroke;
+  /* El filete es del color del fondo, no un gris: separa países vecinos sin
+     dibujar fronteras, que es un detalle político que este mapa no necesita
+     tomar. */
+  stroke: var(--color-bg);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  cursor: pointer;
+  transition:
+    fill var(--dur-fast) var(--ease-out-quart),
+    stroke var(--dur-fast) var(--ease-out-quart);
+}
+
+/* El relleno dice QUÉ es el país y el trazo dice a cuál estás apuntando. Separar
+   las dos cosas permite tener cuatro estados sobre una rampa de tres peldaños
+   sin que ninguno se confunda con otro. */
+.country:hover {
+  stroke: var(--color-accent);
+  stroke-width: 2;
+}
+
+.hasPartner {
+  fill: var(--color-map-partner);
+}
+
+.selected {
+  fill: var(--color-accent);
+  stroke: var(--color-accent);
+  stroke-width: 2;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--color-fg-3);
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.swatchCovered {
+  background-color: var(--color-map-covered);
+}
+
+.swatchPartner {
+  background-color: var(--color-map-partner);
+}

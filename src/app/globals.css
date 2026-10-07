@@ -34,6 +34,19 @@
   --color-accent-fog: #0a2dff33;
   --color-star: #0a2dff40;
 
+  /* Mapa de cobertura del Partner Locator. Tres peldaños de la misma rampa azul,
+     que es lo que lo hace legible de un vistazo: el vecino es tierra neutra, el
+     territorio azul claro y el país con partner azul pleno. El seleccionado usa
+     `--color-accent`, porque el acento como RELLENO sí está autorizado y así el
+     mapa no estrena un cuarto color.
+
+     Separados por tema y no invertidos: en claro la tierra neutra tiene que
+     distinguirse del papel blanco y en oscuro del negro. Un mismo gris no sirve
+     para las dos cosas. */
+  --color-map-land: #e8e8e8;
+  --color-map-covered: #c3cdff;
+  --color-map-partner: #7b8dff;
+
   /* Error. Mismo criterio que el acento: un token para borde y otro para texto,
      porque el rojo que se ve bien como línea no siempre pasa contraste como
      tipografía. `#b01212` sobre blanco da 7.2:1. */
@@ -107,6 +120,10 @@
     --color-accent-fog: #0a2dff40;
     --color-star: #ffffff33;
 
+    --color-map-land: #1c1c1c;
+    --color-map-covered: #1f2a63;
+    --color-map-partner: #3f55c4;
+
     /* El rojo del tema claro sobre negro queda muy oscuro; este da 8.7:1. */
     --color-danger: #f05252;
     --color-danger-text: #ff8a8a;
@@ -137,6 +154,10 @@
   --color-accent-dim: #0a2dff1a;
   --color-accent-fog: #0a2dff40;
   --color-star: #ffffff33;
+
+  --color-map-land: #1c1c1c;
+  --color-map-covered: #1f2a63;
+  --color-map-partner: #3f55c4;
 
   --color-danger: #f05252;
   --color-danger-text: #ff8a8a;
