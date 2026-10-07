@@ -3,12 +3,14 @@
 import { useTranslations } from 'next-intl';
 import { useId, useMemo, useState } from 'react';
 
+import { CoverageMap } from '@/components/CoverageMap';
 import { coveredCountries } from '@/config/presence';
-import { partners } from '@/config/partners';
+import { countriesWithPartners, partners } from '@/config/partners';
 import { solutions } from '@/config/solutions';
 import type { CountryCode, SolutionId } from '@/config/types';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/cn';
+import type { CoverageGeometry } from '@/lib/coverage-map';
 
 import styles from './partner-locator.module.css';
 
@@ -18,7 +20,18 @@ const ANY = 'all' as const;
 type CountryFilter = CountryCode | typeof ANY;
 type SolutionFilter = SolutionId | typeof ANY;
 
-export const PartnerLocatorClient = () => {
+/**
+ * Los países con partner no cambian en tiempo de ejecución: salen de
+ * `src/config/partners.ts`. Se calcula una vez y no en cada render.
+ */
+const conPartner = countriesWithPartners();
+
+interface PartnerLocatorClientProps {
+  /** Trazados del mapa, proyectados en el servidor durante el build. */
+  readonly geometry: CoverageGeometry;
+}
+
+export const PartnerLocatorClient = ({ geometry }: PartnerLocatorClientProps) => {
   const t = useTranslations('partnerLocator');
   const tCountry = useTranslations('presence.countries');
   const tSolution = useTranslations('solutions');
@@ -37,9 +50,23 @@ export const PartnerLocatorClient = () => {
     [country, solution],
   );
 
+  /**
+   * La sección se nombra con su propio título y no con el contador de
+   * resultados, que era lo que hacía antes: «Sin partners» es un nombre extraño
+   * para una región, y ataba el nombre a un texto que ahora puede no estar.
+   */
   return (
-    <section className={styles.locator} aria-labelledby={`${fieldId}-results`}>
+    <section className={styles.locator} aria-label={t('title')}>
       <div className={cn('container', styles.inner)}>
+        {/* El mapa comparte el estado del `<select>`, no tiene el suyo: así los
+            dos controles no pueden contradecirse nunca. */}
+        <CoverageMap
+          geometry={geometry}
+          withPartners={conPartner}
+          selected={country === ANY ? null : country}
+          onSelect={(code) => setCountry(code ?? ANY)}
+        />
+
         <form
           className={styles.filters}
           /* Sin submit: filtrar es instantáneo. El `form` está por semántica y
@@ -87,15 +114,23 @@ export const PartnerLocatorClient = () => {
             </select>
           </div>
 
-          {/* `aria-live` y no un `role="status"` aparte: el conteo ES el resumen,
-              y anunciarlo dos veces obligaría a mantener dos textos sincronizados. */}
-          <p
-            id={`${fieldId}-results`}
-            className={cn('mono', styles.count)}
-            aria-live="polite"
-          >
-            {t('resultsCount', { count: results.length })}
-          </p>
+          {/* Solo cuando hay algo que contar. Con cero resultados decía «Sin
+              partners» justo encima del bloque que ya lo explica y además
+              ofrece salida: repetir la mala noticia en dos sitios no informa,
+              insiste.
+
+              `aria-live` y no un `role="status"` aparte: el conteo ES el
+              resumen, y anunciarlo dos veces obligaría a mantener dos textos
+              sincronizados. */}
+          {results.length > 0 && (
+            <p
+              id={`${fieldId}-results`}
+              className={cn('mono', styles.count)}
+              aria-live="polite"
+            >
+              {t('resultsCount', { count: results.length })}
+            </p>
+          )}
         </form>
 
         {results.length === 0 ? (

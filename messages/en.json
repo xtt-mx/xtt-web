@@ -128,6 +128,10 @@
       "platinum": "Platinum",
       "gold": "Gold",
       "authorized": "Authorized"
+    },
+    "map": {
+      "legendCovered": "Coverage",
+      "legendPartner": "With partner"
     }
   },
   "contact": {

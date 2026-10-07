@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import es from '../messages/es.json';
 import { coveredCountries } from '../src/config/presence';
@@ -62,9 +63,11 @@ test.describe('Partner Locator', () => {
     await page.getByLabel('País').selectOption('CR');
     await page.getByLabel('Solución').selectOption('ccaas');
 
-    // Con el directorio vacío cualquier combinación da cero, y el contador debe
-    // decirlo en vez de quedarse con el número anterior.
-    await expect(main.getByText('Sin partners')).toBeVisible();
+    // Con el directorio vacío cualquier combinación da cero. Lo que este test
+    // llama "mentir" es quedarse con el número anterior, y eso se comprueba
+    // igual: el contador DESAPARECE en vez de decir «Sin partners» encima del
+    // bloque que ya explica el cero y además ofrece salida.
+    await expect(main.getByText('Sin partners')).toHaveCount(0);
     await expect(main.getByText(es.partnerLocator.empty)).toBeVisible();
   });
 
@@ -95,5 +98,65 @@ test.describe('Partner Locator', () => {
     await expect(
       presence.getByText(es.presence.countries.CO, { exact: true }),
     ).toHaveCount(1);
+  });
+});
+
+/**
+ * El mapa va `aria-hidden` a propósito —ver `src/components/CoverageMap.tsx`—,
+ * así que aquí no sirven los locators por rol. Los países se buscan por
+ * `data-country`, que es su única identidad en el DOM.
+ */
+test.describe('Mapa de cobertura', () => {
+  const pais = (page: Page, code: string) => page.locator(`[data-country="${code}"]`);
+
+  test('dibuja un país por cada uno de la cobertura', async ({ page }) => {
+    await page.goto('/partner-locator');
+
+    // El número sale de la configuración, igual que en los filtros: dar de alta
+    // un país no debe obligar a tocar este test.
+    await expect(page.locator('[data-country]')).toHaveCount(coveredCountries.length);
+  });
+
+  test('pulsar un país filtra, y el desplegable lo refleja', async ({ page }) => {
+    await page.goto('/partner-locator');
+
+    await pais(page, 'CR').click();
+
+    // Lo que importa no es que el país se pinte, sino que el mapa y el
+    // desplegable no puedan contradecirse: comparten un solo estado.
+    await expect(page.getByLabel('País')).toHaveValue('CR');
+  });
+
+  test('cambiar el desplegable marca el país en el mapa', async ({ page }) => {
+    await page.goto('/partner-locator');
+
+    await page.getByLabel('País').selectOption('JM');
+
+    // La clase lleva el hash de CSS Modules, así que se compara por contenido.
+    await expect(pais(page, 'JM')).toHaveClass(/selected/);
+    await expect(pais(page, 'CR')).not.toHaveClass(/selected/);
+  });
+
+  test('volver a pulsar el país elegido lo deselecciona', async ({ page }) => {
+    await page.goto('/partner-locator');
+
+    await pais(page, 'MX').click();
+    await expect(page.getByLabel('País')).toHaveValue('MX');
+
+    await pais(page, 'MX').click();
+    await expect(page.getByLabel('País')).toHaveValue('all');
+    await expect(pais(page, 'MX')).not.toHaveClass(/selected/);
+  });
+
+  test('no se interpone en el recorrido con teclado', async ({ page }) => {
+    await page.goto('/partner-locator');
+
+    // Doce `<path>` enfocables entre el encabezado y los filtros harían del
+    // teclado un castigo. El desplegable es el control accesible; el mapa es un
+    // atajo para el ratón y debe ser invisible para el foco.
+    await expect(page.locator('[data-country][tabindex]')).toHaveCount(0);
+    await expect(page.locator('svg[aria-hidden="true"] [data-country]')).toHaveCount(
+      coveredCountries.length,
+    );
   });
 });
