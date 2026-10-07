@@ -50,8 +50,13 @@ export const PartnerLocatorClient = ({ geometry }: PartnerLocatorClientProps) =>
     [country, solution],
   );
 
+  /**
+   * La sección se nombra con su propio título y no con el contador de
+   * resultados, que era lo que hacía antes: «Sin partners» es un nombre extraño
+   * para una región, y ataba el nombre a un texto que ahora puede no estar.
+   */
   return (
-    <section className={styles.locator} aria-labelledby={`${fieldId}-results`}>
+    <section className={styles.locator} aria-label={t('title')}>
       <div className={cn('container', styles.inner)}>
         {/* El mapa comparte el estado del `<select>`, no tiene el suyo: así los
             dos controles no pueden contradecirse nunca. */}
@@ -109,15 +114,23 @@ export const PartnerLocatorClient = ({ geometry }: PartnerLocatorClientProps) =>
             </select>
           </div>
 
-          {/* `aria-live` y no un `role="status"` aparte: el conteo ES el resumen,
-              y anunciarlo dos veces obligaría a mantener dos textos sincronizados. */}
-          <p
-            id={`${fieldId}-results`}
-            className={cn('mono', styles.count)}
-            aria-live="polite"
-          >
-            {t('resultsCount', { count: results.length })}
-          </p>
+          {/* Solo cuando hay algo que contar. Con cero resultados decía «Sin
+              partners» justo encima del bloque que ya lo explica y además
+              ofrece salida: repetir la mala noticia en dos sitios no informa,
+              insiste.
+
+              `aria-live` y no un `role="status"` aparte: el conteo ES el
+              resumen, y anunciarlo dos veces obligaría a mantener dos textos
+              sincronizados. */}
+          {results.length > 0 && (
+            <p
+              id={`${fieldId}-results`}
+              className={cn('mono', styles.count)}
+              aria-live="polite"
+            >
+              {t('resultsCount', { count: results.length })}
+            </p>
+          )}
         </form>
 
         {results.length === 0 ? (

@@ -63,9 +63,11 @@ test.describe('Partner Locator', () => {
     await page.getByLabel('País').selectOption('CR');
     await page.getByLabel('Solución').selectOption('ccaas');
 
-    // Con el directorio vacío cualquier combinación da cero, y el contador debe
-    // decirlo en vez de quedarse con el número anterior.
-    await expect(main.getByText('Sin partners')).toBeVisible();
+    // Con el directorio vacío cualquier combinación da cero. Lo que este test
+    // llama "mentir" es quedarse con el número anterior, y eso se comprueba
+    // igual: el contador DESAPARECE en vez de decir «Sin partners» encima del
+    // bloque que ya explica el cero y además ofrece salida.
+    await expect(main.getByText('Sin partners')).toHaveCount(0);
     await expect(main.getByText(es.partnerLocator.empty)).toBeVisible();
   });
 
