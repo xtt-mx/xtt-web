@@ -26,8 +26,27 @@ const nextConfig: NextConfig = {
    */
   output: process.env.NEXT_OUTPUT_STANDALONE === 'true' ? 'standalone' : undefined,
 
+  /**
+   * Sin optimizador de imágenes.
+   *
+   * Esto apaga la ruta `/_next/image`, y con ella se van de golpe cuatro avisos
+   * de seguridad que el panel de Hostinger marcaba en rojo: el RCE crítico por
+   * AVIF (GHSA-2xp9-vwfh-vxw4), el SSRF alto del optimizador, y las tres altas
+   * de `sharp` —libvips, libheif y librsvg—, que solo son alcanzables por ahí.
+   *
+   * No es una renuncia: `next/image` no se importa en ningún archivo y la única
+   * imagen del sitio es `public/logo-xtt.svg`, que el optimizador no toca de
+   * todas formas. Antes había `formats: ['image/avif', 'image/webp']`, que sin
+   * un solo `next/image` nunca llegó a hacer nada.
+   *
+   * Y a diferencia de actualizar, esto no caduca: la superficie desaparece en
+   * vez de quedar parcheada hasta el siguiente aviso.
+   *
+   * Si algún día hace falta `next/image`, hay que quitar esto Y comprobar antes
+   * que la versión de Next en uso tiene los parches del optimizador.
+   */
   images: {
-    formats: ['image/avif', 'image/webp'],
+    unoptimized: true,
   },
 
   experimental: {
