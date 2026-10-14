@@ -50,6 +50,48 @@ versión, para que siga valiendo cuando salga Next 17 sin mantener una lista.
 > Turbopack **no** tiene respaldo en WebAssembly, que es la otra mitad de por qué
 > esto no se podía parchear: sin binario nativo no hay build.
 
+### Los avisos de seguridad del panel
+
+hPanel lista las vulnerabilidades de npm del sitio. Llegó a mostrar **29: tres
+críticas y dieciséis altas**. Casi ninguna era explotable aquí, y la
+investigación está resumida abajo para que nadie tenga que repetirla.
+
+> 🚨 **No pulsar el botón «parchear» de hPanel.** Marca las tres críticas como
+> `is_patchable`, pero su arreglo es subir `next` a **16.3.x** — justo la línea
+> que no compila en este servidor por la glibc. Abriría un PR que, al fusionarse,
+> repite el fallo de arriba.
+
+**Las tres críticas no aplican**, y no por optimismo: es la condición que pone
+cada aviso.
+
+| Crítica                            | Condición del aviso                                                                    | Por qué no aplica                                    |
+| ---------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| RCE en Windows (CVE-2026-75604)    | «the server runs on Windows»                                                           | El servidor es Linux                                 |
+| RCE en `next/og` (CVE-2026-94545)  | Pasar valores del atacante a un SVG generado; quien no usa `next/og` está «unaffected» | `next/og` no se importa en ningún archivo            |
+| RCE por AVIF (GHSA-2xp9-vwfh-vxw4) | Que llegue un AVIF al optimizador: subidas, CMS o URLs externas                        | No hay optimizador: ver `images` en `next.config.ts` |
+
+De las dieciséis altas, **nueve venían de `commitlint` y `eslint`**: son
+devDependencies y nunca llegan al servidor.
+
+**Lo que sí queda abierto**, y conviene saberlo:
+
+- **Cache poisoning en SSG (CVE-2026-94484, moderada).** El aviso describe el
+  disparador como «a root-level catch-all page together with statically generated
+  routes», y este proyecto tiene exactamente eso:
+  `src/app/[locale]/[...rest]/page.tsx` junto a 18 páginas estáticas. Atenúa que
+  no haya ISR ni `revalidate`, pero el aviso no ofrece más salida que actualizar
+  — y actualizar es lo que la glibc impide.
+- **`braces` (alta).** No tiene versión parcheada: la 3.0.4 no existe. Viene de
+  `eslint-config-next`, así que es de desarrollo.
+
+Las demás se cerraron forzando versiones parcheadas desde `overrides` en
+`pnpm-workspace.yaml`. El recuento bajó de 29 a 9.
+
+> ⚠️ pnpm 11.4 **no reresuelve cuando cambian los `overrides`** de
+> `pnpm-workspace.yaml`: dice «Already up to date» y el lockfile se queda sin la
+> sección. Hay que forzarlo tocando `package.json` o borrando el lockfile. Si
+> añades un override y el recuento no baja, es esto.
+
 ### Cómo se despliega
 
 Un push a `main` construye en los dos sitios: Hostinger tiene el repo conectado

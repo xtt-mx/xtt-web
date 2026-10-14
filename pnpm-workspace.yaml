@@ -19,6 +19,43 @@
 # de construir. La comprobación solo podía molestar.
 verifyDepsBeforeRun: false
 
+# Versiones parcheadas forzadas en dependencias que no controlamos.
+#
+# El escáner de Hostinger listaba 29 vulnerabilidades y el panel llevaba semanas
+# en rojo. Casi ninguna era explotable aquí —nueve venían de `commitlint` y
+# `eslint`, que jamás llegan al servidor— pero un panel con 29 avisos permanentes
+# enseña a ignorarlo, y ese es el verdadero riesgo: esconder el día que aparezca
+# uno de verdad.
+#
+# Son `overrides` y no actualizaciones porque ninguno de estos paquetes es una
+# dependencia directa: los arrastran `next`, `eslint` y `commitlint`, y hay que
+# esperar a que ELLOS actualicen. Esto se adelanta.
+#
+# Cada entrada se quita en cuanto el paquete que la arrastra suba por su cuenta.
+#
+# `braces` NO está aquí y no es un olvido: su aviso no tiene versión parcheada
+# —la 3.0.4 no existe—, y viene de `eslint-config-next`, que es de desarrollo.
+# Las claves van ENTRECOMILLADAS, como en la documentación de pnpm: llevan `@` y
+# dígitos, y sin comillas el bloque entero se ignora en silencio — el lockfile se
+# queda sin sección `overrides` y `pnpm install` dice «Already up to date».
+overrides:
+  # Lectura arbitraria de archivos vía sourceMappingURL. Lo traen `next` y
+  # `@tailwindcss/postcss`; se ejecuta en el build, no al servir.
+  'postcss': ^8.5.23
+  'source-map-js': ^1.2.2
+  # libvips, libheif y librsvg. Con el optimizador de imágenes apagado ya no hay
+  # forma de llegar a ellas, pero el escáner mira la versión, no la ruta.
+  'sharp': ^0.35.5
+  # SSRF y confusión de host. Vienen de `commitlint` → `ajv`.
+  'fast-uri': ^3.1.8
+  'js-yaml': ^4.3.2
+  # Denegación de servicio por recursión. Hay DOS líneas instaladas, cada una con
+  # su propio parche: la 1.x la arrastra `eslint` y la 5.x `typescript-eslint`.
+  # Se acotan por major para no empujar la 1.x a la 5.x, que sería un salto de
+  # major en una dependencia que no controlamos.
+  'brace-expansion@1': ^1.1.21
+  'brace-expansion@5': ^5.0.12
+
 # pnpm no ejecuta postinstall scripts salvo que se aprueben aquí de forma explícita.
 # Solo habilitamos los que realmente necesitan compilar un binario nativo.
 allowBuilds:
